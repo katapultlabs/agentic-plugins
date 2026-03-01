@@ -1,0 +1,9 @@
+{
+  "name": "whatsapp-markdown",
+  "version": "0.1.0",
+  "description": "Convert standard Markdown into WhatsApp-compatible formatting. Translates headers, bold, italic, strikethrough, links, tables, and other Markdown features into the simplified subset that WhatsApp supports.",
+  "author": {
+    "name": "Tomás Gutierrez"
+  },
+  "keywords": ["whatsapp", "markdown", "formatting", "messaging"]
+}
