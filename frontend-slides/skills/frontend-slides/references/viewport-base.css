@@ -1,0 +1,274 @@
+/* ===========================================
+   VIEWPORT FITTING: MANDATORY BASE STYLES
+   Include this ENTIRE file in every presentation.
+   These styles ensure slides fit exactly in the viewport
+   and scale legibly across display densities (1080p → 4K).
+   =========================================== */
+
+/* 0. FLUID ROOT FONT-SIZE — everything downstream scales from this.
+   Blends vw + vh so it responds to both wide and tall viewports.
+   Floor 18px (laptops), ceiling 26px (4K / large displays). */
+html {
+    font-size: clamp(18px, calc(14px + 0.35vw + 0.2vh), 26px);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 1. Lock html/body to viewport */
+html, body {
+    height: 100%;
+    overflow-x: hidden;
+}
+
+html {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+}
+
+/* 2. Each slide = exact viewport height */
+.slide {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    overflow: hidden; /* CRITICAL: Prevent ANY overflow in landscape */
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* 3. Content container with flex for centering */
+.slide-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-height: 100%;
+    overflow: hidden; /* Double-protection against overflow */
+    padding: var(--slide-padding);
+}
+
+/* 4. ALL typography uses clamp() for responsive scaling
+   LEGIBILITY FLOORS — no text may ever render below these minimums:
+     title  ≥ 2rem
+     h2     ≥ 1.6rem
+     h3     ≥ 1.1rem
+     body   ≥ 1rem
+     small  ≥ 0.85rem
+*/
+:root {
+    /* Titles scale from mobile to desktop */
+    --title-size: clamp(2rem, 5vw, 4rem);
+    --h2-size: clamp(1.6rem, 3.5vw, 2.5rem);
+    --h3-size: clamp(1.1rem, 2.5vw, 1.75rem);
+
+    /* Body text */
+    --body-size: clamp(1rem, 1.5vw, 1.25rem);
+    --small-size: clamp(0.85rem, 1vw, 1rem);
+
+    /* Spacing scales with viewport */
+    --slide-padding: clamp(1rem, 4vw, 4rem);
+    --content-gap: clamp(0.5rem, 2vw, 2rem);
+    --element-gap: clamp(0.25rem, 1vw, 1rem);
+}
+
+/* 5. Cards/containers use viewport-relative max sizes */
+.card, .container, .content-box {
+    max-width: min(90vw, 1000px);
+    max-height: min(80vh, 700px);
+}
+
+/* 6. Lists auto-scale with viewport */
+.feature-list, .bullet-list {
+    gap: clamp(0.4rem, 1vh, 1rem);
+}
+
+.feature-list li, .bullet-list li {
+    font-size: var(--body-size);
+    line-height: 1.4;
+}
+
+/* 7. Grids adapt to available space */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: clamp(0.5rem, 1.5vw, 1rem);
+}
+
+/* 8. Images constrained to viewport */
+img, .image-container {
+    max-width: 100%;
+    max-height: min(50vh, 400px);
+    object-fit: contain;
+}
+
+/* ===========================================
+   RESPONSIVE HEIGHT BREAKPOINTS
+   Aggressive scaling for shorter viewports
+   =========================================== */
+
+/* Short viewports (< 700px height) */
+@media (max-height: 700px) {
+    :root {
+        --slide-padding: clamp(0.75rem, 3vw, 2rem);
+        --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+        --title-size: clamp(2rem, 4.5vw, 2.5rem);
+        --h2-size: clamp(1.6rem, 3vw, 1.75rem);
+    }
+}
+
+/* Very short viewports (< 600px height) */
+@media (max-height: 600px) {
+    :root {
+        --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+        --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+        --title-size: clamp(2rem, 4vw, 2.25rem);
+        --body-size: clamp(1rem, 1.2vw, 1.1rem);
+    }
+
+    /* Hide non-essential elements */
+    .nav-dots, .keyboard-hint, .decorative {
+        display: none;
+    }
+}
+
+/* Extremely short (landscape phones, < 500px height)
+   EXCEPTION: legibility floors are relaxed here because vertical
+   space is too scarce for full-size type. Prefer splitting into
+   more slides over relying on this breakpoint. */
+@media (max-height: 500px) {
+    :root {
+        --slide-padding: clamp(0.4rem, 2vw, 1rem);
+        --title-size: clamp(1.6rem, 3.5vw, 2rem);
+        --h2-size: clamp(1.3rem, 2.5vw, 1.6rem);
+        --h3-size: clamp(1rem, 2vw, 1.3rem);
+        --body-size: clamp(0.85rem, 1vw, 1rem);
+        --small-size: clamp(0.75rem, 0.9vw, 0.85rem);
+    }
+}
+
+/* ===========================================
+   RESPONSIVE WIDTH BREAKPOINTS
+   Stack layouts for narrow viewports
+   =========================================== */
+
+/* Tablet / narrow desktop (≤ 800px width) */
+@media (max-width: 800px) {
+    :root {
+        --slide-padding: clamp(0.75rem, 3vw, 2rem);
+        --title-size: clamp(2rem, 6vw, 3rem);
+        --h2-size: clamp(1.6rem, 4vw, 2rem);
+    }
+
+    /* Stack split/two-column layouts */
+    .split, .two-col, .columns, [class*="split"] {
+        flex-direction: column !important;
+        gap: var(--content-gap);
+    }
+
+    /* Reduce grid columns */
+    .grid {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    }
+}
+
+/* Phone (≤ 600px width) */
+@media (max-width: 600px) {
+    :root {
+        --slide-padding: clamp(0.5rem, 4vw, 1.5rem);
+        --title-size: clamp(2rem, 7vw, 2.5rem);
+    }
+
+    /* Single-column everything */
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Stack stat rows */
+    .stats, .stat-row, [class*="stats"] {
+        flex-direction: column !important;
+        gap: var(--element-gap);
+    }
+}
+
+/* ===========================================
+   PORTRAIT ORIENTATION
+   Tall viewports: flip scaling axis, stack layouts,
+   allow inner scroll for dense content.
+   =========================================== */
+
+@media (orientation: portrait) {
+    /* In portrait the taller axis is height, so lean on vh */
+    html {
+        font-size: clamp(18px, calc(14px + 0.2vw + 0.35vh), 26px);
+        /* Relax snap so inner-scroll on .dense slides works */
+        scroll-snap-type: y proximity;
+    }
+
+    /* Default: slides stay locked in portrait too */
+    .slide {
+        overflow: hidden;
+    }
+
+    /* Opt-in: dense content slides (6+ cards, multi-row stats)
+       may scroll in portrait. Add class="slide dense" to enable. */
+    .slide.dense {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Stack all split/two-column layouts vertically */
+    .split, .two-col, .columns, [class*="split"] {
+        flex-direction: column !important;
+        gap: var(--content-gap);
+    }
+
+    /* Card grids become single-column */
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Stack horizontal stat rows */
+    .stats, .stat-row, [class*="stats"] {
+        flex-direction: column !important;
+        gap: var(--element-gap);
+    }
+
+    /* Hide nav dots (unreachable in portrait scroll) */
+    .nav-dots {
+        display: none;
+    }
+
+    /* Scale down timeline markers */
+    .timeline-marker, .timeline-dot, [class*="timeline"] .marker {
+        transform: scale(0.75);
+    }
+}
+
+/* Extra-narrow portrait phones (≤ 480px width in portrait) */
+@media (orientation: portrait) and (max-width: 480px) {
+    :root {
+        --slide-padding: clamp(0.4rem, 3vw, 1rem);
+        --content-gap: clamp(0.3rem, 1.5vw, 0.75rem);
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: var(--element-gap);
+    }
+}
+
+/* ===========================================
+   REDUCED MOTION
+   Respect user preferences
+   =========================================== */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+    }
+
+    html {
+        scroll-behavior: auto;
+    }
+}

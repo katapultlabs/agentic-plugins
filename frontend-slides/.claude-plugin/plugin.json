@@ -1,0 +1,11 @@
+{
+  "name": "frontend-slides",
+  "version": "0.1.0",
+  "description": "Create stunning, animation-rich HTML presentations from scratch or by converting PowerPoint files. Features 12 curated visual styles, zero-dependency single-file output, and a visual style discovery workflow.",
+  "author": {
+    "name": "zarazhangrui"
+  },
+  "repository": "https://github.com/zarazhangrui/frontend-slides",
+  "license": "MIT",
+  "keywords": ["presentations", "slides", "html", "powerpoint", "design", "animations"]
+}

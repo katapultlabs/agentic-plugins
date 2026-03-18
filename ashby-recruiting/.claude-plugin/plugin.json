@@ -1,0 +1,9 @@
+{
+  "name": "ashby-recruiting",
+  "version": "0.1.0",
+  "description": "Ashby ATS integration for recruiting analytics, candidate search, pipeline management, and hiring insights — powered by the Ashby API",
+  "author": {
+    "name": "Katapult"
+  },
+  "keywords": ["ashby", "recruiting", "ats", "hiring", "pipeline", "candidates", "analytics"]
+}
