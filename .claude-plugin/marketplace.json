@@ -1,0 +1,15 @@
+{
+  "name": "katapult-plugins",
+  "owner": {
+    "name": "Katapult Labs",
+    "url": "https://github.com/katapultlabs"
+  },
+  "plugins": [
+    {
+      "name": "whatsapp-markdown",
+      "source": "./whatsapp-markdown",
+      "description": "Convert standard Markdown into WhatsApp-compatible formatting.",
+      "version": "0.1.0"
+    }
+  ]
+}
