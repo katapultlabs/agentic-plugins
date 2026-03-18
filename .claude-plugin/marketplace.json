@@ -10,6 +10,18 @@
       "source": "./whatsapp-markdown",
       "description": "Convert standard Markdown into WhatsApp-compatible formatting.",
       "version": "0.1.0"
+    },
+    {
+      "name": "ashby-recruiting",
+      "source": "./ashby-recruiting",
+      "description": "Ashby ATS integration for recruiting analytics, candidate search, pipeline management, and hiring insights.",
+      "version": "0.1.0"
+    },
+    {
+      "name": "frontend-slides",
+      "source": "./frontend-slides",
+      "description": "Create stunning, animation-rich HTML presentations from scratch or by converting PowerPoint files.",
+      "version": "0.1.0"
     }
   ]
 }

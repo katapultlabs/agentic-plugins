@@ -27,6 +27,8 @@ Go to the **Discover** tab to see all plugins from this marketplace, or install 
 | Plugin | Description |
 |--------|-------------|
 | [whatsapp-markdown](./whatsapp-markdown) | Convert standard Markdown into WhatsApp-compatible formatting |
+| [ashby-recruiting](./ashby-recruiting) | Ashby ATS integration for recruiting analytics, candidate search, and pipeline management |
+| [frontend-slides](./frontend-slides) | Create stunning, animation-rich HTML presentations from scratch or by converting PowerPoint files |
 
 ## Using a plugin
 
