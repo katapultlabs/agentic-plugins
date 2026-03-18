@@ -7,7 +7,7 @@ A plugin marketplace for [Claude Code](https://docs.anthropic.com/en/docs/claude
 Add this marketplace to your Claude Code instance:
 
 ```
-/plugin marketplace add katapultlabs/ai-plugins
+/plugin marketplace add katapultlabs/agentic-plugins
 ```
 
 Then browse available plugins:
