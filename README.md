@@ -1,6 +1,6 @@
 # Katapult AI Plugins
 
-A plugin marketplace for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and Claude Co-Work. Browse, install, and use community plugins that extend Claude's capabilities.
+A plugin marketplace for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and Claude Cowork. Browse, install, and use community plugins that extend Claude's capabilities.
 
 ## Install the marketplace
 
