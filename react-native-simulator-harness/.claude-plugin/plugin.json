@@ -1,0 +1,10 @@
+{
+  "name": "react-native-simulator-harness",
+  "version": "0.1.0",
+  "description": "Autonomous iOS Simulator testing for React Native and Expo projects. Gives Claude Code the knowledge to build, launch, navigate, and verify mobile apps on the iOS Simulator without manual intervention.",
+  "author": {
+    "name": "katapultlabs"
+  },
+  "license": "MIT",
+  "keywords": ["react-native", "expo", "ios", "simulator", "testing", "mobile", "mcp"]
+}

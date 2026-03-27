@@ -22,6 +22,12 @@
       "source": "./frontend-slides",
       "description": "Create stunning, animation-rich HTML presentations from scratch or by converting PowerPoint files.",
       "version": "0.1.0"
+    },
+    {
+      "name": "react-native-simulator-harness",
+      "source": "./react-native-simulator-harness",
+      "description": "Autonomous iOS Simulator testing for React Native and Expo projects.",
+      "version": "0.1.0"
     }
   ]
 }

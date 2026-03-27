@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "ios-simulator": {
+      "command": "npx",
+      "args": ["-y", "ios-simulator-mcp"],
+      "env": {
+        "IOS_SIMULATOR_MCP_DEFAULT_OUTPUT_DIR": "./test-artifacts"
+      }
+    }
+  }
+}
