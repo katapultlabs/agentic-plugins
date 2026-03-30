@@ -28,6 +28,12 @@
       "source": "./react-native-simulator-harness",
       "description": "Autonomous iOS Simulator testing for React Native and Expo projects.",
       "version": "0.1.0"
+    },
+    {
+      "name": "site",
+      "source": "./site-builder",
+      "description": "GitHub for everyone — helps non-technical users create, save, and publish web projects to GitHub Pages without knowing git.",
+      "version": "1.0.0"
     }
   ]
 }

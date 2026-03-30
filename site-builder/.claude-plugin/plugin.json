@@ -1,0 +1,9 @@
+{
+  "name": "site",
+  "description": "GitHub for everyone — helps non-technical users create, save, and publish web projects to GitHub Pages without knowing git.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Juan Ospina"
+  },
+  "keywords": ["github", "deploy", "pages", "beginner", "no-code"]
+}
