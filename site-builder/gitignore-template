@@ -1,0 +1,52 @@
+# === ghsetup safety rules ===
+# This file prevents secrets from being uploaded to GitHub.
+# Do NOT remove these rules — the repo is public.
+
+# Environment files (contain passwords, API keys, tokens)
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+*.env
+
+# ghsetup internal state (contains tokens)
+.ghsetup/
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Credentials and secrets
+*secret*
+*credential*
+*password*
+*.secrets
+secrets.json
+credentials.json
+service-account*.json
+
+# Cloud provider configs
+.aws/
+.gcloud/
+.azure/
+
+# IDE and OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node (in case they npm install something)
+node_modules/
+package-lock.json
+
+# Logs
+*.log
