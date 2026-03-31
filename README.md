@@ -29,6 +29,8 @@ Go to the **Discover** tab to see all plugins from this marketplace, or install 
 | [whatsapp-markdown](./whatsapp-markdown) | Convert standard Markdown into WhatsApp-compatible formatting |
 | [ashby-recruiting](./ashby-recruiting) | Ashby ATS integration for recruiting analytics, candidate search, and pipeline management |
 | [frontend-slides](./frontend-slides) | Create stunning, animation-rich HTML presentations from scratch or by converting PowerPoint files |
+| [react-native-simulator-harness](./react-native-simulator-harness) | Autonomous iOS Simulator testing for React Native and Expo projects |
+| [site-builder](./site-builder) | GitHub for everyone — helps non-technical users create, save, and publish web projects to GitHub Pages |
 
 ## Using a plugin
 
