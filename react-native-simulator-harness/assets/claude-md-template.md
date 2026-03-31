@@ -17,17 +17,23 @@ The project has `ios-simulator-mcp` configured in `.mcp.json` for autonomous iOS
 5. **Verify**: Read accessibility tree again, compare expected vs actual
 6. **Screenshot**: Only for visual verification or when accessibility data is insufficient
 
+### Gotchas
+- **Expo Go modal**: Dismiss Close/X button on first launch before interacting
+- **Metro cache**: After switching `.env`, must `npx expo start --clear`
+- **Native modules**: New native packages need `npx expo run:ios` rebuild
+- **IDB Python**: Use 3.11-3.12, not 3.13+ (asyncio incompatibilities)
+- **Local auth**: Synced OAuth users login with `localdev123` (set by sync script)
+
 ### testID Conventions
-Every interactive element has a testID:
-- Screens: `screen-{name}` (e.g., `screen-home`, `screen-login`)
-- Buttons: `btn-{action}` (e.g., `btn-send`, `btn-sign-in`)
-- Text inputs: `input-{field}` (e.g., `input-email`, `input-message`)
-- Lists: `list-{name}` (e.g., `list-messages`, `list-conversations`)
-- List items: `item-{name}-{index}` or `card-{name}-{index}`
-- Filters: `btn-filter-{type}` (e.g., `btn-filter-breakfast`)
-- Views/sections: `view-{name}` (e.g., `view-error`, `view-empty-state`)
+- Screens: `screen-{name}`
+- Buttons: `btn-{action}`
+- Text inputs: `input-{field}`
+- Lists: `list-{name}`
+- Items: `item-{name}-{index}` or `card-{name}-{index}`
+- Filters: `btn-filter-{type}`
+- Views: `view-{name}`
 
 ### Key screens and their testIDs
-<!-- Fill in your project's screen map here -->
+<!-- Fill in your project's screen map -->
 - **Login**: `screen-login`, `input-email`, `btn-sign-in`
 - **Home**: `screen-home`, ...

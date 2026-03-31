@@ -1,227 +1,116 @@
 ---
 name: rn-simulator-harness
 description: >
-  Use this skill when working with React Native or Expo mobile apps that need to be
-  tested on the iOS Simulator. Triggers when the user asks to "test the app",
-  "verify the UI", "check the screen", "run the mobile app", "test the login flow",
-  "navigate the app", "take a screenshot", or any task involving iOS Simulator
-  interaction with a React Native project. Also triggers when you need to build,
-  launch, or debug a React Native app on the simulator.
+  Autonomous iOS Simulator testing for React Native and Expo projects. Use when
+  the user asks to "test the app", "verify the UI", "check the screen", "run the
+  mobile app", "test a flow", "navigate the app", "take a screenshot", "build and
+  test", or any task involving iOS Simulator interaction with a React Native or
+  Expo project. Also use when setting up iOS simulator testing infrastructure,
+  adding testIDs, or debugging simulator issues.
 ---
 
 # React Native iOS Simulator Harness
 
-You are an autonomous mobile testing agent. You can build, launch, navigate, and verify React Native / Expo apps on the iOS Simulator without manual intervention.
+Autonomously build, launch, navigate, and verify React Native / Expo apps on the iOS Simulator.
 
 ## Prerequisites
 
-Before testing, verify these are in place. If anything is missing, help the user set it up.
+Verify before testing. If missing, run `scripts/setup.sh` or guide the user through manual install.
 
-### Required
-- **macOS** with Xcode installed (iOS Simulator is macOS-only)
-- **Facebook IDB** (iOS Development Bridge) — extends `xcrun simctl` with tap/swipe/accessibility tree
-- **ios-simulator-mcp** configured in `.mcp.json`
+- **macOS** with Xcode + iOS Simulators
+- **Facebook IDB**: `brew tap facebook/fb && brew install idb-companion && pipx install fb-idb`
+- **ios-simulator-mcp** in project `.mcp.json` — use `assets/mcp-config.json` as template
 
-### Setup Commands (run if prerequisites are missing)
-
-```bash
-# Install IDB
-brew tap facebook/fb && brew install idb-companion
-brew install pipx && pipx ensurepath
-
-# Install fb-idb Python client (use Python 3.11 or 3.12, NOT 3.13+)
-pipx install fb-idb --python python3.12
-# If using mise: pipx install fb-idb --python "$(mise where python 3.12)/bin/python3"
-
-# Verify IDB works
-idb list-targets
-```
-
-### MCP Configuration
-
-The project needs an `.mcp.json` with ios-simulator-mcp. If it doesn't exist, create it:
-
-```json
-{
-  "mcpServers": {
-    "ios-simulator": {
-      "command": "npx",
-      "args": ["-y", "ios-simulator-mcp"],
-      "env": {
-        "IOS_SIMULATOR_MCP_DEFAULT_OUTPUT_DIR": "./test-artifacts"
-      }
-    }
-  }
-}
-```
-
-Add `test-artifacts/` to `.gitignore`.
+IDB requires Python 3.11-3.12. Python 3.13+ has asyncio incompatibilities. If using mise: `pipx install fb-idb --python "$(mise where python 3.12)/bin/python3"`.
 
 ## Testing Workflow
 
-Follow this sequence for any testing task:
+1. **Boot simulator**: `xcrun simctl boot "iPhone 17 Pro"`
+2. **Build**: `cd <mobile-dir> && npx expo run:ios --device "<device-name>"`
+3. **Launch**: MCP `launch_app` with bundle ID from `app.json` → `expo.ios.bundleIdentifier`
+4. **Read screen**: MCP `ui_describe_all` — returns accessibility tree (10-50 tokens)
+5. **Navigate**: MCP `ui_tap` at element center from accessibility tree frame
+6. **Type**: MCP `ui_type` to input text into focused fields
+7. **Swipe**: MCP `ui_swipe` with `x_start`, `y_start`, `x_end`, `y_end` for scrolling
+8. **Verify**: `ui_describe_all` again, compare expected vs actual
+9. **Screenshot**: MCP `screenshot` only for visual checks (1,600+ tokens, use sparingly)
 
-### 1. Boot the Simulator
-```bash
-xcrun simctl boot "iPhone 17 Pro"  # or whatever device the project uses
-```
+Always prefer `ui_describe_all` over screenshots. 96% token reduction.
 
-### 2. Build the App
-```bash
-# Expo projects:
-cd apps/mobile && npx expo run:ios --device "iPhone 17 Pro"
+## Element Identification
 
-# Bare React Native:
-npx react-native run-ios --simulator="iPhone 17 Pro"
-```
+Elements in the accessibility tree report:
+- `AXUniqueId` — the testID (most reliable identifier)
+- `AXLabel` — visible text or accessibility label
+- `frame` — `{x, y, width, height}` position
+- `type` — Button, TextField, StaticText, etc.
 
-### 3. Launch the App
-Use the MCP tool `launch_app` with the project's bundle identifier.
-Check `app.json` → `expo.ios.bundleIdentifier` or `Info.plist` for the bundle ID.
-
-### 4. Read the Screen (Token-Efficient)
-**ALWAYS prefer `ui_describe_all` over `screenshot`.**
-
-| Method | Token Cost | When to Use |
-|--------|-----------|-------------|
-| `ui_describe_all` | 10-50 tokens | Default — navigation, verification, element finding |
-| `ui_describe_point` | 5-10 tokens | Targeted — check a specific coordinate |
-| `screenshot` / `ui_view` | 1,600-6,300 tokens | Visual verification only — colors, layout, images |
-
-### 5. Navigate
-Use `ui_tap` with coordinates from the accessibility tree. Elements report their `frame` with `{x, y, width, height}` — tap the center of the element.
-
-Use `ui_type` to enter text into focused fields.
-
-Use `ui_swipe` for scrolling (swipe from bottom to top to scroll down).
-
-### 6. Verify
-Read the accessibility tree again after each action. Compare expected vs actual:
-- Is the right screen showing? (look for `screen-{name}` testIDs)
-- Are the expected elements present?
-- Do text values match expectations?
-
-### 7. Screenshot (only when needed)
-Take a screenshot only for:
-- Visual regression checks (colors, layout, images)
-- Evidence for the developer
-- When accessibility data is insufficient
+To tap, calculate center: `x = frame.x + frame.width/2`, `y = frame.y + frame.height/2`.
 
 ## testID Conventions
 
-Every interactive element should have a `testID` following this naming pattern:
+Add testIDs to all interactive elements. See `references/testid-conventions.md` for the full guide. Summary:
 
-| Element Type | Pattern | Examples |
-|-------------|---------|----------|
-| Screens | `screen-{name}` | `screen-home`, `screen-login`, `screen-settings` |
-| Buttons | `btn-{action}` | `btn-send`, `btn-sign-in`, `btn-cancel`, `btn-back` |
-| Text inputs | `input-{field}` | `input-email`, `input-password`, `input-search` |
-| Lists | `list-{name}` | `list-messages`, `list-contacts`, `list-items` |
-| List items | `item-{name}-{index}` | `item-message-0`, `item-contact-3` |
-| Cards | `card-{name}-{index}` | `card-recipe-0`, `card-product-2` |
-| Filters | `btn-filter-{type}` | `btn-filter-all`, `btn-filter-active` |
-| Views/sections | `view-{name}` | `view-error`, `view-empty-state`, `view-loading` |
-| Modals | `modal-{name}` | `modal-confirm`, `modal-settings` |
-| Navigation tabs | `tab-{name}` | `tab-home`, `tab-profile` |
-
-testIDs appear in the accessibility tree as `AXUniqueId` values — use them to identify elements reliably across UI changes.
+| Element | Pattern | Example |
+|---------|---------|---------|
+| Screen | `screen-{name}` | `screen-home` |
+| Button | `btn-{action}` | `btn-send` |
+| Input | `input-{field}` | `input-email` |
+| List | `list-{name}` | `list-messages` |
+| Item | `item-{name}-{index}` | `item-message-0` |
+| Card | `card-{name}-{index}` | `card-recipe-0` |
+| Filter | `btn-filter-{type}` | `btn-filter-all` |
+| View | `view-{name}` | `view-error` |
 
 ## Common Gotchas
 
-### Expo Go Dev Tools Modal
-On first launch via Expo Go, a full-screen dev tools modal appears. Dismiss it by:
-1. Looking for a button labeled "Close" or with `AXUniqueId: "xmark"` in the accessibility tree
-2. Tapping it before attempting to interact with the app
-3. Alternatively, tap "Continue" if it's the onboarding version
+See `references/gotchas.md` for full details. Critical ones:
 
-### Metro Bundle Cache
-**Critical:** Metro caches environment variables at bundle time. After switching `.env` files (e.g., from production to local dev), you MUST restart Metro with cache cleared:
+- **Expo Go dev tools modal**: Appears on first launch. Dismiss by tapping Close/X before interacting with app.
+- **Metro env cache**: After switching `.env`, restart with `npx expo start --clear` or old URLs persist.
+- **Native module errors**: New native packages need `npx expo run:ios` rebuild, not just hot reload. Wrap imports in try/catch for graceful degradation.
+- **Keyboard blocking**: If `ui_type` fails, toggle hardware keyboard with Cmd+Shift+K in Simulator.
+- **Expo SDK upgrades**: `npx expo install expo@latest --fix` → `npx expo prebuild --clean` → rebuild. Never manually edit `ios/` or `android/` after prebuild.
+
+## Setup
+
+Run `scripts/setup.sh` from any directory to install prerequisites and verify:
+
 ```bash
-npx expo start --clear
-```
-Without this, the app continues using the old API URLs even though the `.env` file changed.
-
-### Native Module Errors
-If you see "Cannot find native module 'X'" at runtime:
-- The module was installed via npm but requires a **native rebuild**
-- Run `npx expo run:ios` (not just Metro restart)
-- For graceful degradation, wrap imports in try/catch:
-```tsx
-let SomeModule = null;
-try { SomeModule = require("some-native-module"); } catch {}
+bash <skill-path>/scripts/setup.sh
 ```
 
-### IDB Python Version
-fb-idb requires Python 3.11 or 3.12. Python 3.13+ has asyncio changes that break it. If you see `RuntimeError: There is no current event loop`, reinstall with an older Python.
+To add the CLAUDE.md testing section to a project, adapt `assets/claude-md-template.md` — replace `{{BUNDLE_ID}}` and `{{DEVICE_NAME}}` placeholders.
 
-### Expo SDK Upgrades
-After a major SDK upgrade (e.g., 52 → 55):
-1. `npx expo install expo@latest --fix` — bumps all Expo packages
-2. `npx expo prebuild --clean` — regenerates iOS/Android native projects
-3. Install new peer deps (e.g., Reanimated 4.x needs `react-native-worklets`)
-4. Rebuild: `npx expo run:ios`
-5. Never manually edit `ios/` or `android/` after prebuild — they're generated
+## Environment Switching
 
-### Keyboard Not Working in Simulator
-If `ui_type` doesn't work, the hardware keyboard may be intercepting input. Toggle it:
-- In Simulator menu: I/O → Keyboard → Connect Hardware Keyboard (uncheck)
-- Or press `Cmd + Shift + K`
+For projects with local/production environments:
 
-## Environment Switching Pattern
-
-For projects that need to point to different backends (local dev vs production):
-
-```
-apps/mobile/
-├── .env              # Active config (gitignored)
-├── .env.local-dev    # Local Supabase + local API
-├── .env.local-prod   # Production services
-```
-
-To switch:
 ```bash
-# Switch to local
-cp apps/mobile/.env.local-dev apps/mobile/.env
-
-# Switch to production
-cp apps/mobile/.env.local-prod apps/mobile/.env
-
-# IMPORTANT: Clear Metro cache after switching
-npx expo start --clear
+cp .env.local-dev .env   # Switch to local
+cp .env.local-prod .env  # Switch to production
+npx expo start --clear   # REQUIRED — flush Metro cache
 ```
 
 ## Local Auth for Synced Users
 
-When syncing production users to a local database, OAuth users (Google, Apple) won't have passwords. Set a local dev password directly in the database:
+Production OAuth users won't have passwords locally. Set one directly:
 
 ```sql
-UPDATE auth.users
-SET encrypted_password = crypt('localdev123', gen_salt('bf')),
-    raw_app_meta_data = raw_app_meta_data || '{"provider": "email", "providers": ["email"]}'::jsonb
+UPDATE auth.users SET
+  encrypted_password = crypt('localdev123', gen_salt('bf')),
+  raw_app_meta_data = raw_app_meta_data || '{"provider":"email","providers":["email"]}'::jsonb
 WHERE email = 'user@example.com';
 ```
 
-Then add a password field to the login screen that only appears in local dev (gate on `SUPABASE_URL` containing `localhost` or `127.0.0.1`).
+Gate the password field in the login UI on `SUPABASE_URL` containing `localhost`.
 
-## Troubleshooting Decision Tree
+## Troubleshooting
 
-**App won't load in simulator?**
-1. Is Metro running? → `npx expo start`
-2. Is the simulator booted? → `xcrun simctl boot "iPhone 17 Pro"`
-3. Was the app built for this simulator? → `npx expo run:ios --device "iPhone 17 Pro"`
-4. Is there an Expo Go modal blocking? → Dismiss it (tap Close/X)
+**App won't load?** Metro running → Simulator booted → App built for device → Expo Go modal blocking?
 
-**Taps not working?**
-1. Read the accessibility tree → is the element where you expect it?
-2. Are you tapping the center of the element's frame?
-3. Is the keyboard covering the element? → Dismiss keyboard first
-4. Is a modal/alert blocking? → Dismiss it first
+**Taps not working?** Element in tree → Tapping center of frame → Keyboard/modal blocking?
 
-**Wrong data showing?**
-1. Check which `.env` is active → `cat apps/mobile/.env`
-2. Did you clear Metro cache after switching? → `npx expo start --clear`
-3. Is the local API running? → Check the API server process
+**Wrong data?** Which `.env` active → Metro cache cleared → API running?
 
-**"Cannot find native module" error?**
-1. Was a new native package installed? → Needs `npx expo run:ios` rebuild
-2. Was the SDK upgraded? → Needs `npx expo prebuild --clean` then rebuild
+**"Cannot find native module"?** Needs `npx expo run:ios` rebuild.
