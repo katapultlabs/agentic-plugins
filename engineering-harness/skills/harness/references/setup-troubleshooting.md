@@ -58,11 +58,18 @@ sessions and repositories.
 
 ## CLAUDE.md
 
+### "CLAUDE.md is missing"
+Run `/init` in the repo first. Claude Code's built-in `/init` does
+self-discovery of your project — languages, frameworks, build commands,
+conventions — and generates a CLAUDE.md tailored to the actual repo.
+After `/init` completes, run `/harness:setup` again to add workflow
+rules on top.
+
 ### "CLAUDE.md exists but is very short"
-This usually means `claude init` was run but the file was never
-customized. The `/harness:setup` command will offer to enrich it with
-the workflow rules and repo conventions. It will preserve whatever
-is already there.
+This usually means `/init` was run but the file was never customized,
+or it's a manual stub. You can re-run `/init` to enrich it (it
+preserves existing content). The `/harness:setup` command will then
+offer to append the workflow rules.
 
 ### Team members see different CLAUDE.md content
 Make sure CLAUDE.md is committed to git and everyone is on the same

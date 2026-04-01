@@ -16,10 +16,15 @@ For each check:
 
 After all checks complete, print the preflight summary checklist.
 
-If this is a brand-new repo with nothing set up, suggest running through
-everything end to end: "Looks like this repo needs the full setup. I'll
-walk you through each piece — CLAUDE.md, MCP configs, docs structure,
-and workflow rules. Want me to go ahead?"
+If CLAUDE.md is missing, tell the engineer to run `/init` first — it
+auto-detects the project's stack and generates a tailored CLAUDE.md.
+Once that's done, continue the harness preflight to layer on workflow
+rules and scaffolding.
 
-Read the SKILL.md and its reference files for templates and rules to use
-when scaffolding.
+If this is a brand-new repo with nothing set up: "Looks like this repo
+needs the full setup. Start by running `/init` to generate your
+CLAUDE.md, then run `/harness:setup` again and I'll handle the rest —
+MCP configs, docs structure, and workflow rules."
+
+Read the SKILL.md and its reference files for rules to use when
+scaffolding.

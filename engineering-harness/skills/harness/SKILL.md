@@ -42,22 +42,27 @@ walk through each check below and report a pass/fail checklist.
 Check for `CLAUDE.md` at the repo root. This is the first and most
 important check because everything else depends on it.
 
-**If missing entirely:** the repo has likely never been initialized for
-agentic collaboration. Offer to create one using the starter template
-in `references/claude-md-template.md`. The template includes:
-- Project description placeholder (engineer fills in)
-- Workflow rules (all four — see Part 3)
-- Pointer to docs/ structure and agent-guides/
-- Coding conventions placeholder
+**If missing entirely:** tell the engineer to run `/init` first. Claude
+Code's built-in `/init` command does self-discovery of the project —
+detecting languages, frameworks, build commands, test runners, and
+conventions — and generates a CLAUDE.md tailored to the actual repo.
+This is always better than a static template. Once `/init` completes,
+come back and continue the harness preflight to layer on the workflow
+rules.
 
-**If it exists but is very short** (<10 lines): it was probably generated
-by a bare `claude init` or is a stub. Offer to enrich it with the
-workflow rules and repo conventions. Always preserve existing content —
-append, never overwrite.
+> Run `/init` to generate your CLAUDE.md. It will auto-detect your
+> project's stack, build commands, and conventions. Once that's done,
+> run `/harness:setup` again and I'll add the workflow rules on top.
+
+**If it exists but is very short** (<10 lines): it may be a stub. Ask
+the engineer whether they want to re-run `/init` to enrich it (it
+will preserve existing content), or whether they'd prefer to keep it
+as-is. Either way, check for and offer to append the workflow rules.
 
 **If it exists and has content:** check for the presence of the four
 workflow rules (see Part 3). Report which are present and which
-are missing. Offer to append only the missing ones.
+are missing. Offer to append only the missing ones using the block
+in `references/claude-md-rules.md`.
 
 ### 1.2 — Linear MCP
 
@@ -263,9 +268,8 @@ collaboration actually work. Every issue tells its own story.
 
 ## Reference Files
 
-- **`references/claude-md-template.md`** — full CLAUDE.md starter template
-- **`references/claude-md-rules.md`** — just the four workflow rules
-  (for appending to an existing CLAUDE.md)
+- **`references/claude-md-rules.md`** — the four workflow rules
+  (for appending to an existing CLAUDE.md after `/init`)
 - **`references/templates/prd-template.md`** — PRD template
 - **`references/templates/adr-template.md`** — ADR template
 - **`references/templates/rfc-template.md`** — RFC template
