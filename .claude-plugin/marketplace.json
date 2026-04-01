@@ -34,6 +34,12 @@
       "source": "./site-builder",
       "description": "GitHub for everyone — helps non-technical users create, save, and publish web projects to GitHub Pages without knowing git.",
       "version": "1.0.0"
+    },
+    {
+      "name": "harness",
+      "source": "./engineering-harness",
+      "description": "Opinionated environment preflight, repo scaffolding, and workflow enforcement for teams where humans and agents collaborate as peers.",
+      "version": "0.1.0"
     }
   ]
 }

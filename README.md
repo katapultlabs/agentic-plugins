@@ -31,6 +31,7 @@ Go to the **Discover** tab to see all plugins from this marketplace, or install 
 | [frontend-slides](./frontend-slides) | Create stunning, animation-rich HTML presentations from scratch or by converting PowerPoint files |
 | [react-native-simulator-harness](./react-native-simulator-harness) | Autonomous iOS Simulator testing for React Native and Expo projects |
 | [site-builder](./site-builder) | GitHub for everyone — helps non-technical users create, save, and publish web projects to GitHub Pages |
+| [engineering-harness](./engineering-harness) | Environment preflight, repo scaffolding, and workflow enforcement for human+agent collaboration |
 
 ## Using a plugin
 

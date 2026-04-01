@@ -1,0 +1,36 @@
+# Workflow Rules (Append Block)
+
+Use this when a CLAUDE.md already exists but is missing the workflow
+rules. Append this block to the existing file. Do not overwrite any
+existing content.
+
+---
+
+```markdown
+## Workflow Rules
+
+This repository uses Linear as its workflow backbone. Every human
+and agent session follows these rules.
+
+### Before Creating Issues
+Always search Linear for existing issues before creating new ones. Use
+keyword filters on title and description. If a matching issue exists,
+add a comment to it instead of creating a duplicate.
+
+### Before Starting Work
+At the start of each session, check Linear for the current sprint's
+priorities. Work on the highest-priority unblocked item unless directed
+otherwise. Run `/harness:priorities` to see what's top of the list.
+
+### On Starting a Task
+Move the Linear issue to "In Progress" immediately when you begin work.
+This signals to the rest of the team (human and agent) that the issue
+is being handled.
+
+### On Completing a Task
+1. Move the Linear issue to "Done" (or the team's equivalent state)
+2. Post a comment summarizing what was done: files changed, approach
+   taken, and a link to the PR if applicable
+3. If new follow-up work was discovered, create a new issue (after
+   checking for duplicates) and link it to the completed one
+```
