@@ -1,22 +1,22 @@
 ---
 name: harness
 description: >
-  This skill should be used when an engineer asks to "set up my environment",
+  This skill should be used when someone asks to "set up my environment",
   "configure my repo", "check my setup", "onboard to the repo", "what should I
   work on", "check for duplicates", "is this already filed", "what are the
   priorities", "start a task", "update my issue", "close my issue",
   "scaffold the repo", "set up docs structure", "initialize the project",
   or any request related to ensuring the repo is structured for human+agent
   collaboration with Linear as the workflow backbone. Also triggers on
-  "harness setup", "dev environment check", "preflight", "plugin check",
+  "harness setup", "environment check", "preflight", "plugin check",
   "CLAUDE.md check", "repo structure", "agentic setup", or when starting
-  any new coding session where project context should be loaded first.
+  any new session where project context should be loaded first.
   Use this skill liberally — if someone is asking about onboarding,
   project setup, or workflow hygiene, this is the skill to use.
 version: 0.1.0
 ---
 
-# Engineering Harness
+# Harness
 
 Setup, scaffolding, and workflow enforcement for repositories where Linear
 is the single source of truth and humans and agents collaborate as peers.
@@ -34,7 +34,7 @@ This skill does three things:
 
 ## Part 1: Environment Preflight
 
-When an engineer runs `/harness:setup` or asks to check their environment,
+When a collaborator runs `/harness:setup` or asks to check their environment,
 walk through each check below and report a pass/fail checklist.
 
 ### 1.1 — CLAUDE.md Exists
@@ -42,7 +42,7 @@ walk through each check below and report a pass/fail checklist.
 Check for `CLAUDE.md` at the repo root. This is the first and most
 important check because everything else depends on it.
 
-**If missing entirely:** tell the engineer to run `/init` first. Claude
+**If missing entirely:** tell the collaborator to run `/init` first. Claude
 Code's built-in `/init` command does self-discovery of the project —
 detecting languages, frameworks, build commands, test runners, and
 conventions — and generates a CLAUDE.md tailored to the actual repo.
@@ -55,7 +55,7 @@ rules.
 > run `/harness:setup` again and I'll add the workflow rules on top.
 
 **If it exists but is very short** (<10 lines): it may be a stub. Ask
-the engineer whether they want to re-run `/init` to enrich it (it
+the collaborator whether they want to re-run `/init` to enrich it (it
 will preserve existing content), or whether they'd prefer to keep it
 as-is. Either way, check for and offer to append the workflow rules.
 
@@ -69,23 +69,35 @@ in `references/claude-md-rules.md`.
 Check whether `.mcp.json` exists at the repo root with a `linear` server
 entry pointing to `https://mcp.linear.app/mcp`.
 
-- **If `.mcp.json` is missing:** offer to create it with the Linear and
-  GitHub entries from this plugin's `.mcp.json`.
+- **If `.mcp.json` is missing:** offer to create it with the Linear
+  entry from this plugin's `.mcp.json`.
 - **If `.mcp.json` exists but has no `linear` entry:** offer to add it.
 - **If the entry exists:** test connectivity by calling the Linear MCP's
   `list_issues` tool with a limit of 1. If the call fails with an auth
-  error, walk the engineer through the OAuth flow: run `/mcp` in Claude
+  error, walk the collaborator through the OAuth flow: run `/mcp` in Claude
   Code to authenticate interactively.
 
-### 1.3 — GitHub MCP
+### 1.3 — GitHub CLI (`gh`)
 
-Check `.mcp.json` for a `github` entry (e.g., pointing to
-`https://api.githubcopilot.com/mcp/`). If missing, offer to add it.
-If the team uses GitLab instead, ask and add the appropriate entry.
+Check that the `gh` CLI is installed and authenticated. Run
+`gh auth status` to verify. The `gh` CLI is far more context-efficient
+than a GitHub MCP and is the standard way Claude Code interacts with
+GitHub (PRs, issues, repos, Actions, etc.).
 
-### 1.4 — Engineering Plugin
+- **If `gh` is not installed:** tell the collaborator to install it
+  (`brew install gh` on macOS, or see https://cli.github.com/).
+- **If `gh` is installed but not authenticated:** walk them through
+  `gh auth login` — they can authenticate interactively by running
+  `! gh auth login` in the Claude Code prompt.
+- **If `gh` is authenticated:** report the logged-in user and active
+  account.
 
-Check whether the Anthropic Engineering plugin is available by looking
+If the team uses GitLab instead, check for the `glab` CLI or an
+appropriate GitLab MCP entry in `.mcp.json`.
+
+### 1.4 — Engineering Plugin (optional)
+
+Check whether the Engineering plugin is available by looking
 for engineering-related skills (standup, code-review, architecture, etc.)
 in the current session's available skills.
 
@@ -94,6 +106,8 @@ If not found:
 > The Engineering plugin adds standup summaries, code review, incident
 > response, and more — all wired to Linear. Install it from the plugin
 > marketplace: search "engineering" under knowledge-work-plugins.
+
+This is optional — the harness works without it.
 
 ### 1.5 — Repo Structure
 
@@ -112,11 +126,11 @@ missing, create them with a brief README in each explaining their purpose.
 Print a clear checklist summarizing all results:
 
 ```
-Engineering Harness — Preflight
+Harness — Preflight
 ─────────────────────────────────────────────
 ✓ CLAUDE.md ............. exists, 4/4 workflow rules present
 ✓ Linear MCP ............ connected, authenticated
-✓ GitHub MCP ............ connected
+✓ GitHub CLI (gh) ....... authenticated as @username
 ✓ Engineering plugin .... installed
 ✓ Repo structure ........ docs/ scaffold present
 ✓ .claude/ dirs ......... commands/ and skills/ present
@@ -140,7 +154,7 @@ for and offer to create any missing pieces of this structure.
 ```
 repo-root/
 ├── CLAUDE.md                    # Agent + human onboarding (Tier 1)
-├── .mcp.json                    # MCP server configs (Linear, GitHub)
+├── .mcp.json                    # MCP server configs (Linear)
 ├── .claude/
 │   ├── commands/                # Team slash commands
 │   │   └── README.md            # Explains how to add commands
@@ -156,7 +170,7 @@ repo-root/
 │   ├── rfcs/                    # Request for comments / design docs
 │   │   └── TEMPLATE.md          # RFC template with reviewers section
 │   ├── guides/                  # Runbooks, onboarding, how-tos
-│   │   └── onboarding.md        # New engineer/agent onboarding
+│   │   └── onboarding.md        # New collaborator/agent onboarding
 │   └── agent-guides/            # Tier 3 deep reference for agents
 │       └── README.md            # Index of available agent guides
 └── src/                         # (existing source code — untouched)
@@ -200,7 +214,7 @@ task requires. Keep Tier 1 lean so every session starts fast.
 
 ## Part 3: Workflow Rules
 
-These four rules are the harness engineering contract. They apply to
+These four rules are the harness collaboration contract. They apply to
 every human and every agent session in the repo.
 
 ### Rule 1: Check for Duplicates Before Creating Issues

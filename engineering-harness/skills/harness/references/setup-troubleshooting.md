@@ -32,23 +32,32 @@ Check that the authenticated user has access to the correct Linear
 workspace. The MCP server scopes to the workspace you authorize during
 the OAuth flow.
 
-## GitHub MCP
+## GitHub CLI (`gh`)
 
-### "Authentication failed"
-The GitHub MCP uses the Copilot endpoint which requires a GitHub
-Copilot license or a configured personal access token. Verify:
-1. You have an active GitHub Copilot subscription, OR
-2. Your `.mcp.json` includes auth headers with a valid PAT
+### "gh: command not found"
+The `gh` CLI is not installed. Install it:
+- **macOS**: `brew install gh`
+- **Linux**: see https://cli.github.com/
+- **Windows**: `winget install GitHub.cli`
+
+### "not logged in" or "authentication failed"
+Run `! gh auth login` in your Claude Code prompt to authenticate
+interactively. Follow the browser flow to authorize.
+
+### Verifying your setup
+Run `gh auth status` — it should show your GitHub username and the
+active account. If it shows the wrong account, run `gh auth switch`
+or `gh auth login` again.
 
 ### Using GitLab instead
-Replace the GitHub entry in `.mcp.json` with your GitLab MCP server
-configuration. The harness skill accepts either — it just checks
-that at least one source control MCP is present.
+If your team uses GitLab, install the `glab` CLI
+(`brew install glab`) or add a GitLab MCP entry to `.mcp.json`.
+The harness checks that at least one source control tool is present.
 
 ## Engineering Plugin
 
 ### "Engineering plugin not found"
-The plugin is installed per-user, not per-repo. Each engineer needs to:
+The plugin is installed per-user, not per-repo. Each person needs to:
 1. Open the Claude Code plugin marketplace
 2. Search for "engineering" under knowledge-work-plugins
 3. Install it

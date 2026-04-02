@@ -1,12 +1,12 @@
-# Engineering Harness
+# Harness
 
 Opinionated setup, scaffolding, and workflow enforcement for repositories where
 humans and agents collaborate as peers — with Linear as the workflow backbone.
 
 ## What It Does
 
-- **Environment preflight** — verifies Linear MCP, GitHub MCP, Engineering plugin,
-  CLAUDE.md, and repo structure are properly configured
+- **Environment preflight** — verifies Linear MCP, GitHub CLI (`gh`), CLAUDE.md,
+  and repo structure are properly configured
 - **Repo scaffolding** — creates the directory structure for agentic collaboration:
   docs with PRD, ADR, and RFC templates, agent-guides, and .claude/ dirs
 - **Workflow enforcement** — duplicate checking before filing issues, sprint
@@ -23,7 +23,7 @@ humans and agents collaborate as peers — with Linear as the workflow backbone.
 | Command | `/harness:start-task` | Pick up an issue and move to In Progress |
 | Command | `/harness:complete-task` | Mark done, post summary, link PR |
 | MCP | `linear` | Linear project management (official server) |
-| MCP | `github` | GitHub source control integration |
+| CLI | `gh` | GitHub CLI for PRs, issues, repos, Actions |
 
 ## Setup
 
@@ -34,7 +34,7 @@ humans and agents collaborate as peers — with Linear as the workflow backbone.
 ### Required Authentication
 
 - **Linear**: OAuth via `/mcp` command (first time only per workspace)
-- **GitHub**: GitHub Copilot subscription or personal access token
+- **GitHub**: `gh auth login` (first time only — run `! gh auth login` in Claude Code)
 
 ## Usage
 
@@ -77,5 +77,5 @@ repo-root/
 ## Dependencies
 
 - **Linear MCP** (bundled) — official server at mcp.linear.app
-- **GitHub MCP** (bundled) — GitHub Copilot MCP endpoint
-- **Engineering plugin** (recommended) — Anthropic's knowledge-work-plugins
+- **GitHub CLI (`gh`)** — install via `brew install gh` or https://cli.github.com/
+- **Engineering plugin** (optional) — Anthropic's knowledge-work-plugins
