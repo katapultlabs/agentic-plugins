@@ -59,10 +59,22 @@ the collaborator whether they want to re-run `/init` to enrich it (it
 will preserve existing content), or whether they'd prefer to keep it
 as-is. Either way, check for and offer to append the workflow rules.
 
-**If it exists and has content:** check for the presence of the four
-workflow rules (see Part 3). Report which are present and which
-are missing. Offer to append only the missing ones using the block
-in `references/claude-md-rules.md`.
+**If it exists and has content:** check for:
+
+1. **Size** — is it under 100 lines? If over 150, suggest restructuring
+   as a router (see "The Router Pattern" below). A bloated CLAUDE.md
+   wastes context every session and dilutes the important rules.
+2. **Automatic Behaviors** — does it have a "How Claude Code Should Work"
+   or equivalent section with "when X, do Y" rules? If missing, offer
+   to append the template from `references/claude-md-rules.md` (Block 1).
+3. **Self-healing** — does it have a "When something breaks" section?
+   Claude Code should know how to diagnose and fix common issues without
+   the user asking. If missing, suggest adding it.
+4. **Deep Reference pointers** — does it have a table pointing to docs/
+   files? CLAUDE.md should be a router, not an encyclopedia.
+5. **Workflow rules** — are the four Linear workflow rules present
+   (see Part 3)? If missing, offer to append from
+   `references/claude-md-rules.md` (Block 2).
 
 ### 1.2 — Linear MCP
 
@@ -210,6 +222,41 @@ The key insight: CLAUDE.md is a table of contents, skills are chapters,
 and agent-guides are appendices. An agent loads only what the current
 task requires. Keep Tier 1 lean so every session starts fast.
 
+### The Router Pattern
+
+CLAUDE.md should be a **behavioral router**, not reference documentation.
+It tells Claude Code *what to do* (rules) and *where to look* (pointers),
+not *how things work* (architecture docs).
+
+**What belongs in CLAUDE.md (~80-100 lines):**
+- Project name + one-line description
+- Quick reference table of common commands
+- Safety constraints (what NOT to do — critical for data safety)
+- **Automatic Behaviors** — "when X, do Y" rules Claude follows without
+  being asked. This is the most important section. It covers:
+  - When building UI → follow design system, use existing components
+  - When creating data → create migrations, use the data layer
+  - When something breaks → self-healing steps (sync, reset, reinstall)
+  - Before finishing → always build, always test
+- **Decision filter** — the project's north star for prioritization
+  (e.g., "does this make the demo more compelling?")
+- Build conventions (3-5 lines max)
+- **Deep Reference index** — table of pointers to docs/ files
+
+**What does NOT belong in CLAUDE.md:**
+- Full architecture docs → `docs/architecture.md`
+- Setup/installation scripts → `docs/guides/developer-setup.md`
+- Design system specs → `docs/design-system.md`
+- Environment variable tables → `docs/architecture.md`
+- Migration/workflow procedures → `docs/guides/`
+- Agent system details → `docs/agent-guides/`
+
+The rule of thumb: if a section is only relevant to specific tasks
+(not every session), it belongs in `docs/`, not `CLAUDE.md`.
+
+See `references/claude-md-router-example.md` for a complete 82-line
+example based on a real project.
+
 ---
 
 ## Part 3: Workflow Rules
@@ -282,8 +329,10 @@ collaboration actually work. Every issue tells its own story.
 
 ## Reference Files
 
-- **`references/claude-md-rules.md`** — the four workflow rules
-  (for appending to an existing CLAUDE.md after `/init`)
+- **`references/claude-md-rules.md`** — append blocks for CLAUDE.md
+  (automatic behaviors + workflow rules)
+- **`references/claude-md-router-example.md`** — complete example of a
+  well-structured 82-line CLAUDE.md following the router pattern
 - **`references/templates/prd-template.md`** — PRD template
 - **`references/templates/adr-template.md`** — ADR template
 - **`references/templates/rfc-template.md`** — RFC template
