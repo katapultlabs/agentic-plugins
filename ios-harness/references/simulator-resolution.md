@@ -52,16 +52,15 @@ Bypasses all resolution. Returns `platform=iOS Simulator,id=<UDID>` directly. Us
 
 ## Integration with Makefile
 
-The Makefile calls `resolve-sim.sh` when `PLATFORM=ios`:
+The Makefile calls `resolve-sim.sh` inside build/test/run recipes when `PLATFORM=ios`. Override at invocation:
 
-```makefile
-DESTINATION = $(shell bash $(SCRIPTS_DIR)/resolve-sim.sh --name "$(SIM_NAME)" 2>/dev/null)
-```
-
-Override at invocation:
 ```bash
 SIM_NAME="iPhone 16 Pro" make build
-SIM_UDID="12345..." make build
+```
+
+For direct UDID, call the script or xcbuild.sh directly:
+```bash
+bash scripts/resolve-sim.sh --udid "12345-ABCD-..."
 ```
 
 ## Troubleshooting

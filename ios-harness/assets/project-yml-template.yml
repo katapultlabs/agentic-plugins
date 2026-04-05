@@ -1,7 +1,13 @@
 # XcodeGen project.yml — iOS Harness template
 # Replace {{APP_NAME}}, {{BUNDLE_ID}}, {{DEPLOYMENT_TARGET}} then run: xcodegen generate
 #
-# Defaults: iOS 18.0, SwiftUI, Swift 6, strict concurrency, warnings-as-errors
+# Example: {{APP_NAME}}=Recipes, {{BUNDLE_ID}}=com.example.recipes, {{DEPLOYMENT_TARGET}}=18.0
+# Swift 6, strict concurrency, warnings-as-errors enabled by default.
+#
+# IMPORTANT: You must also create the source files referenced below before running xcodegen:
+#   Sources/App.swift, Sources/ContentView.swift, Sources/Info.plist
+#   Tests/AppTests.swift, Tests/Info.plist
+#   Resources/Assets.xcassets/ (with AppIcon.appiconset and AccentColor.colorset)
 
 name: {{APP_NAME}}
 

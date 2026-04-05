@@ -54,7 +54,7 @@ for subdir in DerivedData cache logs tmp home; do
   if [[ -d "$TARGET" ]]; then
     rm -rf "$TARGET"
     echo "  Removed: build/$subdir/$SAFE_AGENT"
-    ((CLEANED++))
+    CLEANED=$((CLEANED + 1))
   fi
 done
 

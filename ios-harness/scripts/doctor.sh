@@ -14,11 +14,11 @@ check_required() {
   local name="$1" cmd="$2" fix="${3:-}"
   if command -v "$cmd" &>/dev/null; then
     echo "  [ok]      $name"
-    ((PASS++))
+    PASS=$((PASS + 1))
   else
     echo "  [MISSING] $name"
     [[ -n "$fix" ]] && echo "            Fix: $fix"
-    ((FAIL++))
+    FAIL=$((FAIL + 1))
   fi
 }
 
@@ -26,11 +26,11 @@ check_optional() {
   local name="$1" cmd="$2" fix="${3:-}"
   if command -v "$cmd" &>/dev/null; then
     echo "  [ok]      $name"
-    ((PASS++))
+    PASS=$((PASS + 1))
   else
     echo "  [--]      $name (optional)"
     [[ -n "$fix" ]] && echo "            Install: $fix"
-    ((WARN++))
+    WARN=$((WARN + 1))
   fi
 }
 
@@ -45,14 +45,14 @@ if [[ -n "$XCODE_PATH" ]]; then
   if [[ "$XCODE_PATH" == *"CommandLineTools"* ]]; then
     echo "  [WARN]    Points to CommandLineTools, not Xcode.app"
     echo "            Fix: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer"
-    ((WARN++))
+    WARN=$((WARN + 1))
   else
-    ((PASS++))
+    PASS=$((PASS + 1))
   fi
 else
   echo "  [MISSING] xcode-select not configured"
   echo "            Fix: xcode-select --install"
-  ((FAIL++))
+  FAIL=$((FAIL + 1))
 fi
 
 # Show Xcode version
@@ -70,13 +70,12 @@ echo ""
 echo "Required tools:"
 check_required "xcodebuild" "xcodebuild" "Install Xcode from the App Store"
 check_required "xcrun" "xcrun" "Part of Xcode Command Line Tools"
-check_required "python3" "python3" "brew install python3"
+check_required "python3" "python3" "brew install python3 (required by resolve-sim.sh)"
 
 echo ""
 echo "Recommended tools:"
 check_optional "xcodegen" "xcodegen" "brew install xcodegen"
 check_optional "xcbeautify" "xcbeautify" "brew install xcbeautify"
-check_optional "jq" "jq" "brew install jq"
 
 echo ""
 
@@ -89,7 +88,7 @@ echo "  [info]    $AVAILABLE iPhone simulators available, $BOOTED booted"
 if [[ "$AVAILABLE" -eq 0 ]]; then
   echo "  [WARN]    No iPhone simulators installed"
   echo "            Fix: Xcode > Settings > Platforms > download iOS runtime"
-  ((WARN++))
+  WARN=$((WARN + 1))
 fi
 
 echo ""

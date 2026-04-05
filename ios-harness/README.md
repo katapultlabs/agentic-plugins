@@ -19,6 +19,7 @@ No manual Xcode interaction required. Claude follows a Makefile-driven workflow 
 
 - macOS with Xcode (full install, not just Command Line Tools)
 - `xcode-select` pointing to Xcode.app
+- `python3` (used by simulator auto-resolution)
 
 Optional but recommended:
 - `xcodegen` — for project scaffolding (`brew install xcodegen`)

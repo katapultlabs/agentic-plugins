@@ -10,7 +10,9 @@ DerivedData/
 # Swift Package Manager
 .build/
 Packages/
-Package.resolved
+# NOTE: App projects should typically commit Package.resolved for reproducible builds.
+# Uncomment the line below only for library/framework packages:
+# Package.resolved
 
 # Agents
 agents/locks/

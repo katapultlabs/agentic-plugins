@@ -23,6 +23,7 @@ Verify before any build operation. Run `scripts/doctor.sh` or check manually.
 - macOS with full Xcode install (not just Command Line Tools)
 - `xcode-select -p` must point to `/Applications/Xcode.app/Contents/Developer`
 - `xcodebuild`, `xcrun` available on PATH
+- `python3` available on PATH (used by simulator auto-resolution)
 
 **Recommended:**
 - `xcodegen` for project scaffolding: `brew install xcodegen`
@@ -45,18 +46,21 @@ bash <skill-path>/scripts/doctor.sh
 1. Install xcodegen: `brew install xcodegen`
 2. Copy `assets/project-yml-template.yml` to your project as `project.yml`
 3. Replace placeholders: `{{APP_NAME}}`, `{{BUNDLE_ID}}`, `{{DEPLOYMENT_TARGET}}`
-4. Generate the Xcode project: `xcodegen generate`
-5. Copy `assets/Makefile.template` to your project as `Makefile`
-6. Edit the Makefile header variables: `APP_NAME`, `PLATFORM`
-7. Copy `assets/gitignore-template` as `.gitignore`
-8. Run `make diagnose` to verify, then `make build`
+4. Create the required source files: `Sources/App.swift`, `Sources/ContentView.swift`, `Sources/Info.plist`, `Tests/Info.plist`, `Tests/AppTests.swift`, and `Resources/Assets.xcassets/` (see XcodeGen docs for minimal templates)
+5. Generate the Xcode project: `xcodegen generate`
+6. Copy the harness scripts into your project: `cp -r <plugin-path>/scripts/ ./scripts/`
+7. Copy `assets/Makefile.template` to your project as `Makefile`
+8. Edit the Makefile header variables: `APP_NAME`, `PLATFORM`, `SCHEME`
+9. Copy `assets/gitignore-template` as `.gitignore`
+10. Run `make diagnose` to verify, then `make build`
 
 ### Existing project
 
-1. Copy `assets/Makefile.template` to your project as `Makefile`
-2. Edit the header variables to match your project (scheme, platform, etc.)
-3. Copy `assets/gitignore-template` and merge with your existing `.gitignore`
-4. Run `make diagnose` to verify
+1. Copy the harness scripts into your project: `cp -r <plugin-path>/scripts/ ./scripts/`
+2. Copy `assets/Makefile.template` to your project as `Makefile`
+3. Edit the header variables to match your project (`APP_NAME`, `SCHEME`, `PLATFORM`)
+4. Copy `assets/gitignore-template` and merge with your existing `.gitignore`
+5. Run `make diagnose` to verify
 
 ### Add CLAUDE.md section
 
@@ -80,15 +84,16 @@ build/
 └── tmp/<AGENT_NAME>/             # Temporary build files
 ```
 
-The build wrapper (`scripts/xcbuild.sh`) overrides `HOME`, `TMPDIR`, and all Xcode cache paths to point into this agent-specific tree. This means:
+The build wrapper (`scripts/xcbuild.sh`) overrides `TMPDIR` and all Xcode cache paths to point into this agent-specific tree. `HOME` is preserved so signing credentials and SSH keys remain accessible. This means:
 - Two agents can build the same project at the same time
 - A human building in Xcode won't corrupt an agent's DerivedData
 - Each agent's logs and test results are separate and inspectable
 
 **AGENT_NAME resolution order:**
-1. `$AGENT_NAME` environment variable
-2. Contents of `agents/current_name.txt` (if file exists)
-3. Default: `CLAUDE`
+1. `--agent` flag (when calling scripts directly)
+2. `$AGENT_NAME` environment variable
+3. Contents of `agents/current_name.txt` (if file exists)
+4. Default: `CLAUDE`
 
 ### Building
 
@@ -156,7 +161,7 @@ See `references/simulator-resolution.md` for the full algorithm.
 PLATFORM=macos make build-and-run
 ```
 
-macOS builds use `platform=macOS,arch=arm64` destination.
+macOS builds use `platform=macOS,arch=<host arch>` destination (auto-detected).
 
 ## Diagnostics
 
@@ -167,8 +172,7 @@ make diagnose
 Prints:
 - Project/workspace detection (.xcworkspace preferred over .xcodeproj)
 - Active scheme and platform
-- Simulator destination (iOS) or macOS arch
-- Agent name and isolation paths
+- Agent name, DerivedData path, and log path
 - Xcode version and developer directory
 - Tool availability: xcrun, python3, xcodegen, xcbeautify
 

@@ -35,10 +35,10 @@ The script overrides these environment variables before calling xcodebuild:
 
 | Variable | Points to |
 |----------|-----------|
-| `HOME` | `build/home/<agent>/` |
-| `CFFIXED_USER_HOME` | `build/home/<agent>/` |
 | `TMPDIR` | `build/tmp/<agent>/` |
 | `XDG_CACHE_HOME` | `build/cache/<agent>/xdg/` |
+
+Note: `HOME` is **not** overridden — signing credentials, SSH keys, `.gitconfig`, and provisioning profiles in your real home directory remain accessible.
 
 And passes these as xcodebuild flags:
 
@@ -54,9 +54,10 @@ And passes these as xcodebuild flags:
 
 The agent name determines which subdirectory tree is used. It resolves in order:
 
-1. **`$AGENT_NAME` environment variable** — highest priority, set by the caller
-2. **`agents/current_name.txt`** — file in project root, persists across sessions
-3. **Default: `CLAUDE`** — fallback when nothing else is configured
+1. **`--agent` flag** — highest priority when calling scripts directly
+2. **`$AGENT_NAME` environment variable** — set by the caller or Makefile
+3. **`agents/current_name.txt`** — file in project root, persists across sessions
+4. **Default: `CLAUDE`** — fallback when nothing else is configured
 
 To switch agents:
 ```bash

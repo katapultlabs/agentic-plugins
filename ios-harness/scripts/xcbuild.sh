@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
 # xcbuild.sh — Agent-isolated xcodebuild wrapper
 #
-# Runs xcodebuild with all caches, DerivedData, and temp directories scoped
-# to a named agent under build/. This prevents collisions when multiple
-# agents (or a human + agent) build the same project simultaneously.
+# Runs xcodebuild with DerivedData, caches, temp files, and logs scoped to a
+# named agent under build/. This prevents collisions when multiple agents
+# (or a human + agent) build the same project simultaneously.
+#
+# HOME is NOT overridden — signing credentials, SSH keys, and .gitconfig remain
+# accessible. Only build artifacts and caches are isolated.
 #
 # Usage:
 #   bash scripts/xcbuild.sh --agent CLAUDE --action build -- -scheme MyApp ...
 #   bash scripts/xcbuild.sh --action test -- -scheme MyApp test
 #
-# The agent name resolves from: --agent flag > $AGENT_NAME env > agents/current_name.txt > "CLAUDE"
+# Agent name resolves from: --agent flag > $AGENT_NAME env > agents/current_name.txt > "CLAUDE"
 
 set -euo pipefail
 
@@ -53,13 +56,11 @@ ARCHIVE_DIR="$LOG_DIR/archive"
 
 CLANG_CACHE="$CACHE_DIR/clang/ModuleCache"
 SWIFT_CACHE="$CACHE_DIR/swift/ModuleCache"
-SPM_CACHE="$CACHE_DIR/swiftpm"
 SPM_SOURCES="$CACHE_DIR/swiftpm/SourcePackages"
 XDG_CACHE="$CACHE_DIR/xdg"
-AGENT_HOME="$PROJECT_DIR/build/home/$SAFE_AGENT"
 
-mkdir -p "$DERIVED_DATA" "$CLANG_CACHE" "$SWIFT_CACHE" "$SPM_CACHE" "$SPM_SOURCES" \
-         "$XDG_CACHE" "$LOG_DIR" "$ARCHIVE_DIR" "$TMP_DIR" "$AGENT_HOME"
+mkdir -p "$DERIVED_DATA" "$CLANG_CACHE" "$SWIFT_CACHE" "$SPM_SOURCES" \
+         "$XDG_CACHE" "$LOG_DIR" "$ARCHIVE_DIR" "$TMP_DIR"
 
 # --- Archive previous logs and results ---
 LOG_FILE="$LOG_DIR/${SAFE_ACTION}.log"
@@ -85,10 +86,9 @@ echo "    DerivedData: $DERIVED_DATA"
 echo "    Logs:        $LOG_FILE"
 echo ""
 
+# Isolate TMPDIR and XDG cache, but preserve real HOME for signing/credentials
 XCODEBUILD_CMD=(
   env
-  HOME="$AGENT_HOME"
-  CFFIXED_USER_HOME="$AGENT_HOME"
   TMPDIR="$TMP_DIR"
   XDG_CACHE_HOME="$XDG_CACHE"
   xcodebuild
@@ -108,9 +108,14 @@ set -e
 
 XCBUILD_EXIT="${PIPE_STATUSES[0]:-1}"
 FILTER_EXIT="${PIPE_STATUSES[1]:-0}"
+TEE_EXIT="${PIPE_STATUSES[2]:-0}"
 
 if [[ "$FILTER_EXIT" -ne 0 && "$XCBUILD_EXIT" -eq 0 ]]; then
   echo "WARNING: Output filter exited with $FILTER_EXIT (build succeeded)" >&2
+fi
+
+if [[ "$TEE_EXIT" -ne 0 ]]; then
+  echo "WARNING: Log write failed (tee exited with $TEE_EXIT)" >&2
 fi
 
 if [[ "$XCBUILD_EXIT" -ne 0 ]]; then
