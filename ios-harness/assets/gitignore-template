@@ -1,0 +1,26 @@
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+
+# Build artifacts (agent-isolated)
+build/
+DerivedData/
+
+# Swift Package Manager
+.build/
+Packages/
+Package.resolved
+
+# Agents
+agents/locks/
+
+# OS
+.DS_Store
+*.swp
+*~
+
+# Secrets
+.env
+.env.*
+!.env.example

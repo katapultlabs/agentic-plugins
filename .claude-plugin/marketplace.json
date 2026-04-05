@@ -40,6 +40,12 @@
       "source": "./engineering-harness",
       "description": "Opinionated environment preflight, repo scaffolding, and workflow enforcement for teams where humans and agents collaborate as peers.",
       "version": "0.1.0"
+    },
+    {
+      "name": "ios-harness",
+      "source": "./ios-harness",
+      "description": "Build, test, and run native iOS and macOS Xcode projects from Claude Code with agent-isolated builds, simulator auto-resolution, and strict Swift 6 defaults.",
+      "version": "0.1.0"
     }
   ]
 }

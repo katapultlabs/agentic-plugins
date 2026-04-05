@@ -1,0 +1,139 @@
+# iOS Harness — Makefile
+# Drop this into your Xcode project root and edit the variables below.
+#
+# Usage:
+#   make build          Build with strict Swift 6 flags
+#   make test           Run unit tests
+#   make run            Launch on simulator (or macOS)
+#   make build-and-run  Build then launch
+#   make diagnose       Print build config and tool status
+#   make clean          Remove current agent's build artifacts
+#   make clean-all      Remove all build artifacts
+#   make help           Show this list
+
+# ─── Project config (edit these) ────────────────────────────────────────────
+APP_NAME     := {{APP_NAME}}
+PLATFORM     := ios
+# Options: ios, macos
+
+# Override to target a specific simulator (default: auto-pick best)
+SIM_NAME     ?= auto
+
+# Build configuration
+CONFIGURATION := Debug
+
+# ─── Derived values (usually don't touch) ───────────────────────────────────
+SCRIPTS_DIR  := ./scripts
+APP_SCHEME   := $(APP_NAME)
+
+# Auto-detect workspace or project
+WORKSPACE    := $(firstword $(wildcard *.xcworkspace))
+PROJECT      := $(firstword $(wildcard *.xcodeproj))
+
+ifneq ($(WORKSPACE),)
+  BUILD_FILE := -workspace "$(WORKSPACE)"
+else ifneq ($(PROJECT),)
+  BUILD_FILE := -project "$(PROJECT)"
+else
+  BUILD_FILE :=
+endif
+
+# Agent name (lazy — resolved on first use)
+ifeq ($(origin AGENT_NAME), undefined)
+  AGENT_NAME = $(shell \
+    if [ -f agents/current_name.txt ]; then \
+      tr -d '\n\r' < agents/current_name.txt; \
+    else \
+      echo CLAUDE; \
+    fi)
+endif
+
+# ─── Strict build flags ────────────────────────────────────────────────────
+STRICT_FLAGS := \
+  GCC_TREAT_WARNINGS_AS_ERRORS=YES \
+  SWIFT_TREAT_WARNINGS_AS_ERRORS=YES \
+  SWIFT_STRICT_CONCURRENCY=complete \
+  SWIFT_VERSION=6.0
+
+# ─── Platform-specific destination ──────────────────────────────────────────
+ifeq ($(PLATFORM),ios)
+  # Resolved at runtime via resolve-sim.sh
+  DESTINATION = $(shell bash $(SCRIPTS_DIR)/resolve-sim.sh --name "$(SIM_NAME)" 2>/dev/null)
+  SDK_SUFFIX  := -iphonesimulator
+else
+  DESTINATION := platform=macOS,arch=arm64
+  SDK_SUFFIX  :=
+endif
+
+# ─── Common xcodebuild args ────────────────────────────────────────────────
+XCODE_COMMON := \
+  $(BUILD_FILE) \
+  -scheme "$(APP_SCHEME)" \
+  -destination "$(DESTINATION)" \
+  -configuration $(CONFIGURATION) \
+  $(STRICT_FLAGS)
+
+# ─── Targets ────────────────────────────────────────────────────────────────
+.DEFAULT_GOAL := build-and-run
+.PHONY: help diagnose build test run build-and-run clean clean-all
+
+help:
+	@echo "iOS Harness targets:"
+	@echo "  make build          Build with strict Swift 6 flags"
+	@echo "  make test           Run unit tests"
+	@echo "  make run            Launch app (assumes prior build)"
+	@echo "  make build-and-run  Build then launch"
+	@echo "  make diagnose       Print build config and tool status"
+	@echo "  make clean          Remove current agent's build artifacts"
+	@echo "  make clean-all      Remove all build artifacts"
+
+diagnose:
+	@echo "=== Build Configuration ==="
+	@echo "  App:           $(APP_NAME)"
+	@echo "  Scheme:        $(APP_SCHEME)"
+	@echo "  Platform:      $(PLATFORM)"
+	@echo "  Configuration: $(CONFIGURATION)"
+	@echo "  Workspace:     $(WORKSPACE)"
+	@echo "  Project:       $(PROJECT)"
+	@echo "  Build file:    $(BUILD_FILE)"
+	@echo "  Destination:   $(DESTINATION)"
+	@echo "  Agent:         $(AGENT_NAME)"
+	@echo ""
+	@bash $(SCRIPTS_DIR)/doctor.sh
+
+build:
+	@AGENT_NAME="$(AGENT_NAME)" bash $(SCRIPTS_DIR)/xcbuild.sh \
+	  --agent "$(AGENT_NAME)" --action build -- $(XCODE_COMMON)
+
+test:
+	@AGENT_NAME="$(AGENT_NAME)" bash $(SCRIPTS_DIR)/xcbuild.sh \
+	  --agent "$(AGENT_NAME)" --action test -- $(XCODE_COMMON) test
+
+run:
+ifeq ($(PLATFORM),ios)
+	@echo "Launching $(APP_NAME) on iOS Simulator..."
+	@DERIVED="build/DerivedData/$(AGENT_NAME)"; \
+	APP_PATH=$$(find "$$DERIVED" -name "$(APP_NAME).app" -path "*/Debug-iphonesimulator/*" 2>/dev/null | head -1); \
+	if [ -z "$$APP_PATH" ]; then echo "ERROR: .app not found. Run 'make build' first." >&2; exit 1; fi; \
+	SIM_UDID=$$(echo "$(DESTINATION)" | sed 's/.*id=//'); \
+	xcrun simctl boot "$$SIM_UDID" 2>/dev/null || true; \
+	open -a Simulator 2>/dev/null || true; \
+	BUNDLE_ID=$$(/usr/libexec/PlistBuddy -c "Print:CFBundleIdentifier" "$$APP_PATH/Info.plist" 2>/dev/null); \
+	xcrun simctl install "$$SIM_UDID" "$$APP_PATH"; \
+	xcrun simctl launch "$$SIM_UDID" "$$BUNDLE_ID"; \
+	echo "Launched $$BUNDLE_ID on $$SIM_UDID"
+else
+	@echo "Launching $(APP_NAME) on macOS..."
+	@DERIVED="build/DerivedData/$(AGENT_NAME)"; \
+	APP_PATH=$$(find "$$DERIVED" -name "$(APP_NAME).app" -path "*/Debug/*" ! -path "*Simulator*" 2>/dev/null | head -1); \
+	if [ -z "$$APP_PATH" ]; then echo "ERROR: .app not found. Run 'make build' first." >&2; exit 1; fi; \
+	open -n "$$APP_PATH"
+endif
+
+build-and-run: build run
+
+clean:
+	@bash $(SCRIPTS_DIR)/clean.sh --agent "$(AGENT_NAME)"
+
+clean-all:
+	@bash $(SCRIPTS_DIR)/clean.sh --all

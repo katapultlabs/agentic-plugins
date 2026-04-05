@@ -32,6 +32,7 @@ Go to the **Discover** tab to see all plugins from this marketplace, or install 
 | [react-native-simulator-harness](./react-native-simulator-harness) | Autonomous iOS Simulator testing for React Native and Expo projects |
 | [site-builder](./site-builder) | GitHub for everyone — helps non-technical users create, save, and publish web projects to GitHub Pages |
 | [engineering-harness](./engineering-harness) | Environment preflight, repo scaffolding, and workflow enforcement for human+agent collaboration |
+| [ios-harness](./ios-harness) | Build, test, and run native iOS and macOS Xcode projects with agent-isolated builds and strict Swift 6 defaults |
 
 ## Using a plugin
 
