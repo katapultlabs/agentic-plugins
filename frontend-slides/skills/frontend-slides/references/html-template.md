@@ -323,6 +323,24 @@ Save processed images with `_processed` suffix. Never overwrite originals.
 
 ---
 
+## PDF Export
+
+For PDF export guidance, see Phase 6 in SKILL.md and `scripts/export-pdf.js`.
+
+**Key constraints for PDF-compatible presentations:**
+
+1. **Fonts**: Use Google Fonts, not Fontshare. Fontshare font files have broken PostScript names (`"false"`) that cause macOS Preview to blur text and render sluggishly. If you must use Fontshare, the export script patches the font name tables at generation time.
+
+2. **Page size**: Generate at 1280×720 CSS pixels → 960×540 PDF points (standard widescreen). Do NOT use 1920×1080 — the 1440×810 pt pages are 2.25× standard area and cause Preview sluggishness.
+
+3. **Transparency**: `::before` gradient overlays with `hsla()` become PDF transparency groups. The export script strips these automatically. If designing for PDF, prefer solid backgrounds or use the export script.
+
+4. **Scroll-snap**: CSS `page-break-after` does NOT work with `100vh` scroll-snap. The export script rewrites the DOM (fixed pixel heights, page breaks, scroll-snap disabled) before calling `page.pdf()`.
+
+5. **Linearization**: Post-process with `qpdf --linearize` for progressive page loading in Preview.
+
+---
+
 ## Code Quality
 
 **Comments:** Every section needs clear comments explaining what it does and how to modify it.

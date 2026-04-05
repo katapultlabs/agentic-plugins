@@ -232,6 +232,111 @@ When converting PowerPoint files:
 
 ---
 
+## Phase 6: PDF Export (when requested)
+
+When the user asks for a PDF of their presentation, follow this process. PDF export has three landmines that must all be handled — skip any one and the PDF will be sluggish, blurry, or broken in Preview.
+
+### 1. Font Safety
+
+**CRITICAL: Fontshare fonts produce broken PDFs.** Fontshare ships font files with the PostScript name literally set to the string `"false"` in the font binary. Chromium embeds this verbatim, and macOS Preview cannot cache or identify these fonts — causing text to blur on every page flip.
+
+**Two options:**
+- **Option A (recommended): Use Google Fonts.** They embed with correct PostScript names. Every preset that uses Google Fonts works out of the box.
+- **Option B: Patch Fontshare fonts.** Download the TTF files, patch the name tables with Python fonttools to set correct names, then base64-inject the patched fonts during PDF generation. See `scripts/export-pdf.js` for the implementation.
+
+If a user's presentation uses Fontshare fonts (Neon Cyber preset uses Clash Display + Satoshi), warn them before PDF export.
+
+### 2. Page Dimensions
+
+**Use 1280×720 CSS pixels** for the Playwright viewport. This produces **960×540 point pages** — the exact standard widescreen presentation format that macOS Preview, Keynote, and PowerPoint are optimized for.
+
+Do NOT use 1920×1080 (produces 1440×810 pt pages — 2.25× the standard area, causes sluggish rendering in Preview).
+
+### 3. Flatten Transparency for Print
+
+Slide backgrounds with `::before` pseudo-elements using `hsla()` radial gradients create PDF transparency groups — expensive to composite in Preview. During PDF generation, strip these:
+
+```css
+.slide::before { display: none !important; content: none !important; }
+```
+
+The solid `--bg-primary` background remains. This eliminates compositing cost.
+
+### 4. DOM Rewrite Before Generation
+
+CSS `page-break-after` does NOT work with `100vh` scroll-snap slides. You must rewrite the DOM with JavaScript before calling `page.pdf()`:
+
+```javascript
+// Remove scroll-snap
+document.documentElement.style.scrollSnapType = 'none';
+document.documentElement.style.overflow = 'visible';
+document.documentElement.style.height = 'auto';
+document.body.style.overflow = 'visible';
+document.body.style.height = 'auto';
+
+// Fix each slide to exact pixel height and force page breaks
+document.querySelectorAll('.slide').forEach(slide => {
+    slide.style.height = '720px';
+    slide.style.minHeight = '720px';
+    slide.style.maxHeight = '720px';
+    slide.style.overflow = 'hidden';
+    slide.style.pageBreakAfter = 'always';
+    slide.style.breakAfter = 'page';
+    slide.classList.add('visible'); // trigger animations
+});
+
+// Show all animated elements
+document.querySelectorAll('.reveal, .reveal-scale, .title-reveal, .reveal-fade').forEach(el => {
+    el.style.opacity = '1';
+    el.style.transform = 'none';
+    el.style.transition = 'none';
+});
+
+// Hide UI chrome
+document.querySelectorAll('.nav-dots, .progress-bar, .edit-hotzone, .edit-toggle').forEach(el => {
+    el.style.display = 'none';
+});
+```
+
+### 5. Generate and Post-Process
+
+```javascript
+await page.evaluate(() => document.fonts.ready); // Wait for fonts
+await page.waitForTimeout(2000); // Let layout settle
+
+await page.pdf({
+    path: 'output.pdf',
+    width: '1280px',
+    height: '720px',
+    printBackground: true,
+    margin: { top: '0', right: '0', bottom: '0', left: '0' },
+});
+```
+
+Then linearize with qpdf (install via `brew install qpdf`):
+```bash
+qpdf --linearize output.pdf output-linear.pdf
+mv output-linear.pdf output.pdf
+```
+
+Linearization enables progressive page loading — Preview pre-caches adjacent pages instead of rendering on demand.
+
+### 6. Verify
+
+Run these checks before delivering:
+```bash
+pdfinfo output.pdf   # Should show: Page size: 960 x 540 pts
+pdffonts output.pdf  # Font names should be real (not "+false")
+```
+
+Open in Preview — page flips should be instant with no blur.
+
+### Full Export Script
+
+See `scripts/export-pdf.js` for a complete implementation that handles font patching, DOM rewrite, PDF generation, and linearization.
+
+---
+
 ## Display Density Checklist
 
 **Before delivering any presentation, verify every item:**
@@ -256,3 +361,4 @@ When converting PowerPoint files:
 | [html-template.md](references/html-template.md) | HTML structure, JS features, code quality standards | Phase 3 (generation) |
 | [animation-patterns.md](references/animation-patterns.md) | CSS/JS animation snippets and effect-to-feeling guide | Phase 3 (generation) |
 | [extract-pptx.py](scripts/extract-pptx.py) | Python script for PPT content extraction | Phase 4 (conversion) |
+| [export-pdf.js](scripts/export-pdf.js) | Playwright PDF export with font patching | Phase 6 (PDF export) |
