@@ -212,3 +212,7 @@ See `references/gotchas.md` for full details. The critical ones:
 - **Code signing in CI/agent builds**: Add `CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO` to skip signing.
 - **Swift 6 concurrency errors**: These are real data-race bugs. Do not downgrade `SWIFT_STRICT_CONCURRENCY` — fix the code. See `references/swift-conventions.md`.
 - **"No such module" after SPM update**: Clean module caches: `rm -rf build/cache/<AGENT_NAME>/swift/ModuleCache build/cache/<AGENT_NAME>/clang/ModuleCache` then rebuild.
+
+## Credits
+
+Inspired by [Paul Solt's](https://github.com/PaulSolt) App Creator toolkit. The agent-isolated build architecture, Makefile workflow, and simulator auto-resolution patterns originated in his work at [Super Easy Apps](https://www.supereasyapps.com/).

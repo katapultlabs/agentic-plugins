@@ -74,3 +74,21 @@ Once installed, just ask Claude:
 ## Trigger phrases
 
 The skill activates on: "build the app", "run tests", "run on simulator", "scaffold iOS project", "set up Xcode", "diagnose build", "fix build error", "make build", or any task involving xcodebuild, iOS Simulator, or native Swift development.
+
+## Credits & Inspiration
+
+This plugin was inspired by and built upon the foundational work of **[Paul Solt](https://github.com/PaulSolt)** and his [App Creator](https://github.com/PaulSolt/app-creator) toolkit (v0.9.8). Paul's original system — a three-part skill set comprising `app-creator`, `xcode-makefiles`, and `simple-tasks` — pioneered several of the key ideas in this plugin, including:
+
+- **Agent-isolated builds** with per-agent DerivedData, caches, and logs
+- **Makefile-driven xcodebuild workflows** with strict Swift compiler defaults
+- **Intelligent simulator auto-resolution** with model and runtime ranking
+- **XcodeGen-based project scaffolding** with platform-specific templates
+- **Doctor/diagnose diagnostics** for Xcode toolchain verification
+
+Paul is an experienced iOS developer, educator, and the founder of **[Super Easy Apps](https://www.supereasyapps.com/)** — he builds tools that make native iOS and macOS development more accessible, especially for AI-assisted workflows. If you're building native Apple apps and want hands-on guidance or deeper tooling, check out his work:
+
+- **Website:** [supereasyapps.com](https://www.supereasyapps.com/)
+- **GitHub:** [github.com/PaulSolt](https://github.com/PaulSolt)
+- **Email:** Paul@SuperEasyApps.com
+
+We reimagined his toolkit from first principles for the Katapult plugin marketplace — consolidating three separate skills into one cohesive plugin, refactoring the scripts for clarity, and adding comprehensive reference documentation — but the core architecture and the insight that AI agents need build isolation to work reliably alongside humans came directly from Paul's work. Full credit and gratitude to him for sharing it openly.
