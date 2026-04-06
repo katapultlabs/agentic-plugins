@@ -1,6 +1,6 @@
-# iOS Harness — Makefile
+# Apple Harness — Makefile
 # Drop this into your Xcode project root and edit the variables below.
-# Requires: scripts/ directory from the ios-harness plugin (copy it into your project).
+# Requires: scripts/ directory from the apple-harness plugin (copy it into your project).
 #
 # Usage:
 #   make build          Build with strict Swift 6 flags
@@ -27,7 +27,7 @@ SIM_NAME      ?= auto
 CONFIGURATION ?= Debug
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
-# Points to the scripts/ directory copied from the ios-harness plugin.
+# Points to the scripts/ directory copied from the apple-harness plugin.
 SCRIPTS_DIR   := ./scripts
 
 # ─── Derived values (usually don't touch) ───────────────────────────────────
@@ -58,14 +58,15 @@ STRICT_FLAGS := \
 
 # ─── Targets ────────────────────────────────────────────────────────────────
 .DEFAULT_GOAL := build-and-run
-.PHONY: help diagnose build test run build-and-run clean clean-all
+.PHONY: help diagnose build test run build-and-run console clean clean-all
 
 help:
-	@echo "iOS Harness targets:"
+	@echo "Apple Harness targets:"
 	@echo "  make build          Build with strict Swift 6 flags"
 	@echo "  make test           Run unit tests"
 	@echo "  make run            Launch app (assumes prior build)"
 	@echo "  make build-and-run  Build then launch"
+	@echo "  make console        Stream simulator console logs (Ctrl-C to stop)"
 	@echo "  make diagnose       Print build config and tool status"
 	@echo "  make clean          Remove current agent's build artifacts"
 	@echo "  make clean-all      Remove all build artifacts"
@@ -141,6 +142,18 @@ else
 endif
 
 build-and-run: build run
+
+console:
+ifeq ($(PLATFORM),ios)
+	@set -e; \
+	DEST=$$(bash $(SCRIPTS_DIR)/resolve-sim.sh --name "$(SIM_NAME)"); \
+	SIM_UDID=$$(echo "$$DEST" | sed 's/.*id=//'); \
+	xcrun simctl boot "$$SIM_UDID" 2>/dev/null || true; \
+	echo "Streaming console logs from simulator $$SIM_UDID (Ctrl-C to stop)..."; \
+	xcrun simctl spawn "$$SIM_UDID" log stream --level debug --style ndjson --predicate 'subsystem != "com.apple.runningboard"'
+else
+	@echo "Console log streaming is only supported for iOS Simulator (PLATFORM=ios)."
+endif
 
 clean:
 	@bash $(SCRIPTS_DIR)/clean.sh --agent "$(AGENT_NAME)"

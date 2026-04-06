@@ -40,7 +40,7 @@ prompt_install() {
   fi
 }
 
-echo "=== iOS Harness — Setup ==="
+echo "=== Apple Harness — Setup ==="
 echo ""
 
 # --- macOS check ---

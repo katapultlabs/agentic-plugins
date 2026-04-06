@@ -1,17 +1,17 @@
 ---
-name: ios-build-harness
+name: apple-build-harness
 description: >
-  Native iOS and macOS Xcode build, test, and run harness for Claude Code.
+  Native Apple platform (iOS, macOS) build, test, and run harness for Claude Code.
   Use when the user asks to "build the app", "run tests", "run on simulator",
   "scaffold a new iOS project", "create an Xcode project", "set up build
   tooling", "diagnose build issues", "fix build errors", "make build",
-  "make test", "make run", or any task involving xcodebuild, iOS Simulator,
-  SwiftUI, UIKit, AppKit, or native Swift/Objective-C development. Also
-  activates for XcodeGen scaffolding, Makefile setup, agent-isolated builds,
+  "make test", "make run", "console logs", or any task involving xcodebuild,
+  iOS Simulator, SwiftUI, UIKit, AppKit, or native Swift/Objective-C development.
+  Also activates for XcodeGen scaffolding, Makefile setup, agent-isolated builds,
   strict Swift 6 compiler settings, or Xcode toolchain troubleshooting.
 ---
 
-# iOS Build Harness
+# Apple Build Harness
 
 Build, test, and run native iOS and macOS Xcode projects with agent-isolated builds, simulator auto-resolution, and strict Swift 6 defaults.
 
@@ -192,6 +192,16 @@ bash scripts/clean.sh --all
 
 Cleaning removes DerivedData, caches, logs, and temp files for the specified scope.
 
+## Console Logs
+
+Stream simulator console output for debugging (iOS only):
+
+```bash
+make console
+```
+
+This runs `xcrun simctl spawn <device> log stream` in ndjson format, filtering out noisy system subsystems. Press Ctrl-C to stop. Useful for reading `print()`, `os_log`, and `NSLog` output from the running app.
+
 ## Makefile Targets
 
 | Target | Description |
@@ -202,6 +212,7 @@ Cleaning removes DerivedData, caches, logs, and temp files for the specified sco
 | `make test` | Run unit tests |
 | `make run` | Launch app (assumes prior build) |
 | `make build-and-run` | Build then launch |
+| `make console` | Stream simulator console logs |
 | `make clean` | Remove current agent's build artifacts |
 | `make clean-all` | Remove all build artifacts |
 
@@ -217,6 +228,10 @@ See `references/gotchas.md` for full details. The critical ones:
 - **Swift 6 concurrency errors**: These are real data-race bugs. Do not downgrade `SWIFT_STRICT_CONCURRENCY` — fix the code. See `references/swift-conventions.md`.
 - **"No such module" after SPM update**: Clean module caches: `rm -rf build/cache/<AGENT_NAME>/swift/ModuleCache build/cache/<AGENT_NAME>/clang/ModuleCache` then rebuild.
 
+## Companion: Axiom
+
+For deep iOS development knowledge beyond build tooling — Swift concurrency patterns, memory debugging, SwiftUI architecture, database migrations, performance profiling — install [Axiom](https://github.com/CharlesWiltgen/Axiom) alongside this plugin: `/plugin marketplace add CharlesWiltgen/Axiom`
+
 ## Credits
 
-Inspired by [Paul Solt's](https://github.com/PaulSolt) App Creator toolkit. The agent-isolated build architecture, Makefile workflow, and simulator auto-resolution patterns originated in his work at [Super Easy Apps](https://www.supereasyapps.com/).
+Inspired by [Paul Solt's](https://github.com/PaulSolt) App Creator toolkit and [Charles Wiltgen's](https://github.com/CharlesWiltgen) Axiom project. The agent-isolated build architecture, Makefile workflow, and simulator auto-resolution patterns originated in Paul's work at [Super Easy Apps](https://www.supereasyapps.com/).

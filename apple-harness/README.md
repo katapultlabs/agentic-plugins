@@ -1,6 +1,6 @@
-# iOS Harness
+# Apple Harness
 
-A Claude Code plugin for building, testing, and running native iOS and macOS Xcode projects autonomously.
+A Claude Code plugin for building, testing, and running native Apple platform apps (iOS, macOS) autonomously.
 
 ## What it does
 
@@ -12,6 +12,7 @@ When this plugin is active, Claude Code can:
 - **Scaffold** new Xcode projects via XcodeGen templates
 - **Diagnose** toolchain issues and common build failures
 - **Isolate** builds so multiple agents (or human + agent) never collide on DerivedData
+- **Capture** simulator console logs for debugging
 
 No manual Xcode interaction required. Claude follows a Makefile-driven workflow with shell scripts that handle simulator resolution, build isolation, and log management.
 
@@ -29,9 +30,17 @@ Run `scripts/setup.sh` to verify and install prerequisites.
 
 ## What's included
 
-### Skill: `ios-build-harness`
+### Skill: `apple-build-harness`
 
 Activates when you ask Claude to build, test, run, scaffold, or diagnose a native iOS or macOS project. Contains the full build workflow, Makefile target reference, and integration guidance.
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `/apple-harness:diagnose` | Run environment diagnostics and verify toolchain |
+| `/apple-harness:fix-build` | Guided build failure diagnosis workflow |
+| `/apple-harness:setup` | Verify and install prerequisites |
 
 ### Scripts
 
@@ -47,7 +56,7 @@ Activates when you ask Claude to build, test, run, scaffold, or diagnose a nativ
 
 | Asset | Purpose |
 |-------|---------|
-| `Makefile.template` | Drop-in Makefile with build/test/run targets |
+| `Makefile.template` | Drop-in Makefile with build/test/run/console targets |
 | `claude-md-template.md` | CLAUDE.md section for your project |
 | `gitignore-template` | iOS/macOS project .gitignore |
 | `project-yml-template.yml` | XcodeGen project.yml for new projects |
@@ -71,10 +80,30 @@ Once installed, just ask Claude:
 - "Scaffold a new iOS SwiftUI app called Recipes"
 - "Why is the build failing?"
 - "Set up the Makefile for this project"
+- "Show me the simulator console logs"
 
 ## Trigger phrases
 
-The skill activates on: "build the app", "run tests", "run on simulator", "scaffold iOS project", "set up Xcode", "diagnose build", "fix build error", "make build", or any task involving xcodebuild, iOS Simulator, or native Swift development.
+The skill activates on: "build the app", "run tests", "run on simulator", "scaffold iOS project", "set up Xcode", "diagnose build", "fix build error", "make build", "console logs", or any task involving xcodebuild, iOS Simulator, or native Swift development.
+
+## Companion Plugins
+
+**Apple Harness** handles the build pipeline — how to build, test, and run your app. For deep iOS development knowledge (patterns, debugging, architecture), we recommend also installing:
+
+### [Axiom](https://github.com/CharlesWiltgen/Axiom) by Charles Wiltgen
+
+175+ battle-tested skills covering the entire iOS development lifecycle:
+- Swift 6 concurrency patterns, actors, Sendable (950+ line guides with code patterns)
+- Memory leak detection and Instruments profiling workflows
+- SwiftUI architecture, navigation, layout, and performance
+- Database migration safety (Core Data, SwiftData, GRDB)
+- 38 autonomous agents (build-fixer, memory-auditor, concurrency-auditor, etc.)
+- Console log capture via xclog
+- App Store submission checklists
+
+Install: `/plugin marketplace add CharlesWiltgen/Axiom` or `npx axiom-mcp` for MCP clients.
+
+Apple Harness and Axiom are complementary — use both for the most capable AI-assisted iOS development setup.
 
 ## Credits & Inspiration
 
@@ -92,4 +121,6 @@ Paul is an experienced iOS developer, educator, and the founder of **[Super Easy
 - **GitHub:** [github.com/PaulSolt](https://github.com/PaulSolt)
 - **Email:** Paul@SuperEasyApps.com
 
-We reimagined his toolkit from first principles for the Katapult plugin marketplace — consolidating three separate skills into one cohesive plugin, refactoring the scripts for clarity, and adding comprehensive reference documentation — but the core architecture and the insight that AI agents need build isolation to work reliably alongside humans came directly from Paul's work. Full credit and gratitude to him for sharing it openly.
+The console log capture feature was inspired by **[Charles Wiltgen's](https://github.com/CharlesWiltgen)** xclog tool from the [Axiom](https://github.com/CharlesWiltgen/Axiom) project.
+
+We reimagined these toolkits from first principles for the Katapult plugin marketplace — but the core architecture and the insight that AI agents need build isolation to work reliably alongside humans came directly from Paul's and Charles's work. Full credit and gratitude to both for sharing openly.

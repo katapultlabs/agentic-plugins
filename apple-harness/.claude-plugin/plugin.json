@@ -1,0 +1,20 @@
+{
+  "name": "apple-harness",
+  "version": "0.2.0",
+  "description": "Build, test, and run native Apple platform apps (iOS, macOS) from Claude Code with agent-isolated builds, simulator auto-resolution, and strict Swift 6 defaults.",
+  "author": {
+    "name": "katapultlabs"
+  },
+  "license": "MIT",
+  "keywords": [
+    "ios",
+    "macos",
+    "xcode",
+    "swift",
+    "xcodebuild",
+    "simulator",
+    "native",
+    "swiftui",
+    "uikit"
+  ]
+}

@@ -1,4 +1,4 @@
-# XcodeGen project.yml — iOS Harness template
+# XcodeGen project.yml — Apple Harness template
 # Replace {{APP_NAME}}, {{BUNDLE_ID}}, {{DEPLOYMENT_TARGET}} then run: xcodegen generate
 #
 # Example: {{APP_NAME}}=Recipes, {{BUNDLE_ID}}=com.example.recipes, {{DEPLOYMENT_TARGET}}=18.0

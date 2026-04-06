@@ -2,7 +2,7 @@
 
 ## Strict build settings
 
-The iOS Harness enforces these settings on every build:
+The Apple Harness enforces these settings on every build:
 
 | Setting | Value | Purpose |
 |---------|-------|---------|

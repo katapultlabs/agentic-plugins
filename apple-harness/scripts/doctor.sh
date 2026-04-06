@@ -34,7 +34,7 @@ check_optional() {
   fi
 }
 
-echo "=== iOS Harness — Doctor ==="
+echo "=== Apple Harness — Doctor ==="
 echo ""
 
 # --- Xcode developer directory ---

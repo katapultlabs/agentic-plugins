@@ -1,6 +1,6 @@
-## iOS Build Harness
+## Apple Build Harness
 
-This project uses the iOS Harness plugin for Claude Code. Build, test, and run via Makefile.
+This project uses the Apple Harness plugin for Claude Code. Build, test, and run via Makefile.
 
 ### Quick reference
 
