@@ -23,12 +23,23 @@ PLATFORM=""
 DRY_RUN=false
 FORCE=false
 
+# Escape sed replacement metacharacters (/, &, \)
+sed_escape() { printf '%s' "$1" | sed 's/[\/&\\]/\\&/g'; }
+
+# Require a value argument for a flag
+require_value() {
+  if [[ $# -lt 2 ]]; then
+    echo "ERROR: $1 requires a value." >&2
+    exit 1
+  fi
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --project-dir) PROJECT_DIR="$2"; shift 2 ;;
-    --app-name)    APP_NAME="$2"; shift 2 ;;
-    --scheme)      SCHEME="$2"; shift 2 ;;
-    --platform)    PLATFORM="$2"; shift 2 ;;
+    --project-dir) require_value "$@"; PROJECT_DIR="$2"; shift 2 ;;
+    --app-name)    require_value "$@"; APP_NAME="$2"; shift 2 ;;
+    --scheme)      require_value "$@"; SCHEME="$2"; shift 2 ;;
+    --platform)    require_value "$@"; PLATFORM="$2"; shift 2 ;;
     --dry-run)     DRY_RUN=true; shift ;;
     --force)       FORCE=true; shift ;;
     -h|--help)
@@ -48,6 +59,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Validate platform if explicitly provided
+if [[ -n "$PLATFORM" ]]; then
+  case "$PLATFORM" in
+    ios|macos) ;;
+    *) echo "ERROR: Invalid platform '$PLATFORM'. Must be 'ios' or 'macos'." >&2; exit 1 ;;
+  esac
+fi
+
 # Default project dir to cwd
 PROJECT_DIR="${PROJECT_DIR:-.}"
 PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
@@ -59,13 +78,27 @@ echo ""
 
 # ─── Auto-detect app name from .xcworkspace or .xcodeproj ───────────────────
 if [[ -z "$APP_NAME" ]]; then
-  WORKSPACE="$(ls -d "$PROJECT_DIR"/*.xcworkspace 2>/dev/null | head -1 || true)"
-  XCODEPROJ="$(ls -d "$PROJECT_DIR"/*.xcodeproj 2>/dev/null | head -1 || true)"
+  WORKSPACES=()
+  while IFS= read -r -d '' f; do WORKSPACES+=("$f"); done < <(find "$PROJECT_DIR" -maxdepth 1 -name "*.xcworkspace" -print0 2>/dev/null || true)
+  XCODEPROJS=()
+  while IFS= read -r -d '' f; do XCODEPROJS+=("$f"); done < <(find "$PROJECT_DIR" -maxdepth 1 -name "*.xcodeproj" -print0 2>/dev/null || true)
 
-  if [[ -n "$WORKSPACE" ]]; then
-    APP_NAME="$(basename "$WORKSPACE" .xcworkspace)"
-  elif [[ -n "$XCODEPROJ" ]]; then
-    APP_NAME="$(basename "$XCODEPROJ" .xcodeproj)"
+  if [[ ${#WORKSPACES[@]} -gt 1 ]]; then
+    echo "ERROR: Multiple .xcworkspace files found:" >&2
+    printf "  %s\n" "${WORKSPACES[@]}" >&2
+    echo "  Use --app-name to specify which one." >&2
+    exit 1
+  elif [[ ${#XCODEPROJS[@]} -gt 1 && ${#WORKSPACES[@]} -eq 0 ]]; then
+    echo "ERROR: Multiple .xcodeproj files found:" >&2
+    printf "  %s\n" "${XCODEPROJS[@]}" >&2
+    echo "  Use --app-name to specify which one." >&2
+    exit 1
+  fi
+
+  if [[ ${#WORKSPACES[@]} -eq 1 ]]; then
+    APP_NAME="$(basename "${WORKSPACES[0]}" .xcworkspace)"
+  elif [[ ${#XCODEPROJS[@]} -eq 1 ]]; then
+    APP_NAME="$(basename "${XCODEPROJS[0]}" .xcodeproj)"
   fi
 
   if [[ -z "$APP_NAME" ]]; then
@@ -90,8 +123,8 @@ try:
 except: pass
 " 2>/dev/null || true)"
 
-    # Pick first non-test scheme
-    SCHEME="$(echo "$SCHEMES" | grep -iv "test" | head -1 || true)"
+    # Exclude only conventional test scheme suffixes (Tests, UITests)
+    SCHEME="$(echo "$SCHEMES" | grep -ivE '(Tests|UITests)$' | head -1 || true)"
   fi
   SCHEME="${SCHEME:-$APP_NAME}"
   echo "Detected scheme: $SCHEME"
@@ -99,7 +132,9 @@ fi
 
 # ─── Auto-detect platform from project.pbxproj ──────────────────────────────
 if [[ -z "$PLATFORM" ]]; then
-  PBXPROJ="$(ls "$PROJECT_DIR"/*.xcodeproj/project.pbxproj 2>/dev/null | head -1 || true)"
+  # NOTE: In multi-target projects the first SDKROOT may not be the app target.
+  # Use --platform to override if auto-detection picks wrong.
+  PBXPROJ="$(find "$PROJECT_DIR" -maxdepth 2 -name "project.pbxproj" -print -quit 2>/dev/null || true)"
   if [[ -f "$PBXPROJ" ]]; then
     SDKROOT="$(grep -m1 'SDKROOT' "$PBXPROJ" 2>/dev/null | sed 's/.*= *//;s/;.*//' | tr -d '"[:space:]' || true)"
     case "$SDKROOT" in
@@ -114,12 +149,14 @@ fi
 
 echo ""
 
-# ─── Check for existing files ───────────────────────────────────────────────
-if [[ "$FORCE" != true && "$DRY_RUN" != true ]]; then
+# ─── Check for existing files (runs for both dry-run and real) ──────────────
+SKIP_MAKEFILE=false
+SKIP_SCRIPTS=false
+
+if [[ "$FORCE" != true ]]; then
   if [[ -f "$PROJECT_DIR/Makefile" ]]; then
     echo "WARNING: Makefile already exists in $PROJECT_DIR"
     echo "  Use --force to overwrite, or edit it manually."
-    echo "  Skipping Makefile generation."
     SKIP_MAKEFILE=true
   fi
   if [[ -d "$PROJECT_DIR/scripts" ]] && ls "$PROJECT_DIR/scripts/"*.sh &>/dev/null 2>&1; then
@@ -128,25 +165,58 @@ if [[ "$FORCE" != true && "$DRY_RUN" != true ]]; then
     SKIP_SCRIPTS=true
   fi
 fi
-SKIP_MAKEFILE="${SKIP_MAKEFILE:-false}"
-SKIP_SCRIPTS="${SKIP_SCRIPTS:-false}"
+
+# Determine what would happen to .gitignore and CLAUDE.md
+GITIGNORE="$PROJECT_DIR/.gitignore"
+CLAUDEMD="$PROJECT_DIR/CLAUDE.md"
+
+if [[ -f "$GITIGNORE" ]]; then
+  GITIGNORE_ACTION="merge"
+else
+  GITIGNORE_ACTION="create"
+fi
+
+if [[ -f "$CLAUDEMD" ]]; then
+  if grep -q "^## Apple Build Harness$" "$CLAUDEMD" 2>/dev/null; then
+    CLAUDEMD_ACTION="skip"
+  else
+    CLAUDEMD_ACTION="append"
+  fi
+else
+  CLAUDEMD_ACTION="create"
+fi
 
 # ─── Dry run: show what would happen ────────────────────────────────────────
 if [[ "$DRY_RUN" == true ]]; then
   echo "Dry run — would perform these actions:"
   echo ""
-  echo "  Copy scripts/ → $PROJECT_DIR/scripts/"
-  echo "    xcbuild.sh, resolve-sim.sh, doctor.sh, clean.sh, setup.sh, install.sh"
+
+  if [[ "$SKIP_SCRIPTS" == true ]]; then
+    echo "  [skip] scripts/ (already exists, use --force to overwrite)"
+  else
+    echo "  [copy] scripts/ → $PROJECT_DIR/scripts/"
+    echo "         xcbuild.sh, resolve-sim.sh, doctor.sh, clean.sh, setup.sh, install.sh"
+  fi
   echo ""
-  echo "  Generate Makefile → $PROJECT_DIR/Makefile"
-  echo "    APP_NAME=$APP_NAME, SCHEME=$SCHEME, PLATFORM=$PLATFORM"
+
+  if [[ "$SKIP_MAKEFILE" == true ]]; then
+    echo "  [skip] Makefile (already exists, use --force to overwrite)"
+  else
+    echo "  [generate] Makefile → $PROJECT_DIR/Makefile"
+    echo "             APP_NAME=$APP_NAME, SCHEME=$SCHEME, PLATFORM=$PLATFORM"
+  fi
   echo ""
-  echo "  Merge .gitignore → $PROJECT_DIR/.gitignore"
-  echo "    Add build/, DerivedData/, agents/ exclusions"
+
+  echo "  [$GITIGNORE_ACTION] .gitignore → $PROJECT_DIR/.gitignore"
   echo ""
-  echo "  Append CLAUDE.md section → $PROJECT_DIR/CLAUDE.md"
-  echo "    Apple Build Harness quick reference"
+
+  case "$CLAUDEMD_ACTION" in
+    skip)   echo "  [skip] CLAUDE.md (already has Apple Harness section)" ;;
+    append) echo "  [append] CLAUDE.md → add Apple Build Harness section" ;;
+    create) echo "  [create] CLAUDE.md → $PROJECT_DIR/CLAUDE.md" ;;
+  esac
   echo ""
+
   echo "No files written."
   exit 0
 fi
@@ -165,10 +235,13 @@ fi
 
 # ─── Generate Makefile from template ────────────────────────────────────────
 if [[ "$SKIP_MAKEFILE" != true ]]; then
+  SAFE_APP="$(sed_escape "$APP_NAME")"
+  SAFE_SCHEME="$(sed_escape "$SCHEME")"
+  SAFE_PLATFORM="$(sed_escape "$PLATFORM")"
   sed \
-    -e "s/^APP_NAME      := .*/APP_NAME      := $APP_NAME/" \
-    -e "s/^PLATFORM      := .*/PLATFORM      := $PLATFORM/" \
-    -e "s/^SCHEME        ?= .*/SCHEME        ?= $SCHEME/" \
+    -e "s/^APP_NAME      := .*/APP_NAME      := $SAFE_APP/" \
+    -e "s/^PLATFORM      := .*/PLATFORM      := $SAFE_PLATFORM/" \
+    -e "s/^SCHEME        ?= .*/SCHEME        ?= $SAFE_SCHEME/" \
     "$PLUGIN_DIR/assets/Makefile.template" > "$PROJECT_DIR/Makefile"
   echo "[ok] Generated Makefile (APP_NAME=$APP_NAME, SCHEME=$SCHEME, PLATFORM=$PLATFORM)"
 else
@@ -176,7 +249,6 @@ else
 fi
 
 # ─── Merge .gitignore ───────────────────────────────────────────────────────
-GITIGNORE="$PROJECT_DIR/.gitignore"
 HARNESS_ENTRIES=(
   "# Apple Harness build artifacts"
   "build/"
@@ -184,7 +256,7 @@ HARNESS_ENTRIES=(
   "agents/locks/"
 )
 
-if [[ -f "$GITIGNORE" ]]; then
+if [[ "$GITIGNORE_ACTION" == "merge" ]]; then
   ADDED=0
   for entry in "${HARNESS_ENTRIES[@]}"; do
     if ! grep -qF "$entry" "$GITIGNORE" 2>/dev/null; then
@@ -203,34 +275,37 @@ else
 fi
 
 # ─── Append CLAUDE.md section ───────────────────────────────────────────────
-CLAUDEMD="$PROJECT_DIR/CLAUDE.md"
-if [[ -f "$CLAUDEMD" ]]; then
-  if grep -q "Apple Build Harness" "$CLAUDEMD" 2>/dev/null; then
+SAFE_APP_CLAUDE="$(sed_escape "$APP_NAME")"
+SAFE_PLATFORM_CLAUDE="$(sed_escape "$PLATFORM")"
+
+case "$CLAUDEMD_ACTION" in
+  skip)
     echo "[ok] CLAUDE.md already has Apple Harness section"
-  else
+    ;;
+  append)
     echo "" >> "$CLAUDEMD"
     sed \
-      -e "s/{{APP_NAME}}/$APP_NAME/g" \
-      -e "s/{{PLATFORM}}/$PLATFORM/g" \
+      -e "s/{{APP_NAME}}/$SAFE_APP_CLAUDE/g" \
+      -e "s/{{PLATFORM}}/$SAFE_PLATFORM_CLAUDE/g" \
       -e "s/{{BUNDLE_ID}}/TODO/g" \
       "$PLUGIN_DIR/assets/claude-md-template.md" >> "$CLAUDEMD"
     echo "[ok] Appended Apple Harness section to CLAUDE.md"
-  fi
-else
-  sed \
-    -e "s/{{APP_NAME}}/$APP_NAME/g" \
-    -e "s/{{PLATFORM}}/$PLATFORM/g" \
-    -e "s/{{BUNDLE_ID}}/TODO/g" \
-    "$PLUGIN_DIR/assets/claude-md-template.md" > "$CLAUDEMD"
-  echo "[ok] Created CLAUDE.md with Apple Harness section"
-fi
+    ;;
+  create)
+    sed \
+      -e "s/{{APP_NAME}}/$SAFE_APP_CLAUDE/g" \
+      -e "s/{{PLATFORM}}/$SAFE_PLATFORM_CLAUDE/g" \
+      -e "s/{{BUNDLE_ID}}/TODO/g" \
+      "$PLUGIN_DIR/assets/claude-md-template.md" > "$CLAUDEMD"
+    echo "[ok] Created CLAUDE.md with Apple Harness section"
+    ;;
+esac
 
 # ─── Verify ─────────────────────────────────────────────────────────────────
 echo ""
 echo "=== Install Complete ==="
 echo ""
-echo "Verify with:"
-echo "  cd $PROJECT_DIR"
+printf '  cd "%s"\n' "$PROJECT_DIR"
 echo "  make diagnose"
 echo "  make build"
 echo ""
