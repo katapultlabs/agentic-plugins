@@ -1,42 +1,54 @@
 ---
 name: setup
-description: Verify and install prerequisites — check Xcode, install optional tools, boot a simulator, and configure project build tooling.
+description: Install Apple Harness into an Xcode project — auto-detects app name, scheme, and platform, then copies scripts, Makefile, and .gitignore.
 ---
 
-# Setup Environment
+# Setup Apple Harness
 
-Run the setup script to verify and install all prerequisites for Apple platform development.
+Install the build harness into an existing Xcode project with one command.
 
-## Steps
+## Quick start
 
-1. Run the setup script:
-   ```bash
-   bash scripts/setup.sh
-   ```
-   This checks macOS, Xcode, xcodebuild, xcrun, python3, and optionally installs xcodegen and xcbeautify.
+From the project root (where the `.xcodeproj` or `.xcworkspace` is):
 
-2. If this is a new project, copy the harness files:
-   ```bash
-   cp -r <plugin-path>/scripts/ ./scripts/
-   cp <plugin-path>/assets/Makefile.template ./Makefile
-   cp <plugin-path>/assets/gitignore-template ./.gitignore
-   ```
-
-3. Edit the Makefile header variables:
-   - `APP_NAME` — your app name
-   - `PLATFORM` — `ios` or `macos`
-   - `SCHEME` — your Xcode scheme (defaults to APP_NAME)
-
-4. Verify the setup:
-   ```bash
-   make diagnose
-   make build
-   ```
-
-## Non-interactive mode
-
-For CI or scripted environments:
 ```bash
-bash scripts/setup.sh --yes      # Auto-install optional tools
-bash scripts/setup.sh --check    # Check only, no installs
+bash <skill-path>/../scripts/install.sh
+```
+
+This auto-detects your app name, scheme, and platform, then sets up everything.
+
+## What it does
+
+1. Detects `APP_NAME` from the `.xcodeproj` or `.xcworkspace` filename
+2. Detects `SCHEME` via `xcodebuild -list` (picks first non-test scheme)
+3. Detects `PLATFORM` from `SDKROOT` in `project.pbxproj` (ios or macos)
+4. Copies `scripts/` into the project (xcbuild.sh, resolve-sim.sh, doctor.sh, clean.sh, setup.sh)
+5. Generates a `Makefile` with detected values filled in
+6. Merges harness entries into `.gitignore`
+7. Creates or appends Apple Harness section to `CLAUDE.md`
+
+## Override auto-detection
+
+```bash
+bash <skill-path>/../scripts/install.sh --app-name Recipes --platform ios --scheme Recipes
+```
+
+## Options
+
+| Flag | Purpose |
+|------|---------|
+| `--project-dir DIR` | Project directory (default: current directory) |
+| `--app-name NAME` | Override app name |
+| `--scheme NAME` | Override scheme |
+| `--platform PLAT` | Override platform (ios, macos) |
+| `--dry-run` | Preview without writing files |
+| `--force` | Overwrite existing Makefile and scripts |
+
+## After install
+
+```bash
+make diagnose       # Verify toolchain
+make build          # Build the app
+make test           # Run tests
+make run            # Launch on simulator
 ```

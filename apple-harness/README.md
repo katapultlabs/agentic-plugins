@@ -16,6 +16,27 @@ When this plugin is active, Claude Code can:
 
 No manual Xcode interaction required. Claude follows a Makefile-driven workflow with shell scripts that handle simulator resolution, build isolation, and log management.
 
+## Quick Start
+
+From your Xcode project root, ask Claude:
+
+> "Set up the Apple build harness for this project"
+
+Or run directly:
+
+```bash
+bash <plugin-path>/scripts/install.sh
+```
+
+This auto-detects your app name, scheme, and platform from the `.xcodeproj`, then sets up everything (scripts, Makefile, .gitignore, CLAUDE.md). After install:
+
+```bash
+make build          # Build with strict Swift 6 flags
+make test           # Run unit tests
+make run            # Launch on simulator
+make console        # Stream simulator console logs
+```
+
 ## Prerequisites
 
 - macOS with Xcode (full install, not just Command Line Tools)
@@ -23,10 +44,7 @@ No manual Xcode interaction required. Claude follows a Makefile-driven workflow 
 - `python3` (used by simulator auto-resolution)
 
 Optional but recommended:
-- `xcodegen` — for project scaffolding (`brew install xcodegen`)
 - `xcbeautify` — for readable build output (`brew install xcbeautify`)
-
-Run `scripts/setup.sh` to verify and install prerequisites.
 
 ## What's included
 

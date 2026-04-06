@@ -41,30 +41,45 @@ bash <skill-path>/scripts/doctor.sh
 
 ## Setup for a Project
 
-### New project with XcodeGen
+### One-command install (recommended)
 
-1. Install xcodegen: `brew install xcodegen`
-2. Copy `assets/project-yml-template.yml` to your project as `project.yml`
-3. Replace placeholders: `{{APP_NAME}}`, `{{BUNDLE_ID}}`, `{{DEPLOYMENT_TARGET}}`
-4. Create the required source files: `Sources/App.swift`, `Sources/ContentView.swift`, `Sources/Info.plist`, `Tests/Info.plist`, `Tests/AppTests.swift`, and `Resources/Assets.xcassets/` (see XcodeGen docs for minimal templates)
-5. Generate the Xcode project: `xcodegen generate`
-6. Copy the harness scripts into your project: `cp -r <plugin-path>/scripts/ ./scripts/`
-7. Copy `assets/Makefile.template` to your project as `Makefile`
-8. Edit the Makefile header variables: `APP_NAME`, `PLATFORM`, `SCHEME`
-9. Copy `assets/gitignore-template` as `.gitignore`
-10. Run `make diagnose` to verify, then `make build`
+From your project root (where the `.xcodeproj` or `.xcworkspace` is):
 
-### Existing project
+```bash
+bash <skill-path>/../scripts/install.sh
+```
 
-1. Copy the harness scripts into your project: `cp -r <plugin-path>/scripts/ ./scripts/`
-2. Copy `assets/Makefile.template` to your project as `Makefile`
-3. Edit the header variables to match your project (`APP_NAME`, `SCHEME`, `PLATFORM`)
-4. Copy `assets/gitignore-template` and merge with your existing `.gitignore`
-5. Run `make diagnose` to verify
+This auto-detects your app name, scheme, and platform from the Xcode project, then:
+- Copies `scripts/` (xcbuild.sh, resolve-sim.sh, doctor.sh, clean.sh, setup.sh)
+- Generates a `Makefile` with your project's configuration filled in
+- Merges harness entries into `.gitignore`
+- Creates or appends to `CLAUDE.md` with build workflow reference
 
-### Add CLAUDE.md section
+After install, verify:
+```bash
+make diagnose
+make build
+```
 
-Adapt `assets/claude-md-template.md` into your project's CLAUDE.md. Replace `{{APP_NAME}}`, `{{PLATFORM}}`, and `{{BUNDLE_ID}}` placeholders.
+### Install with overrides
+
+If auto-detection picks the wrong values, or you don't have an .xcodeproj yet:
+
+```bash
+bash <skill-path>/../scripts/install.sh --app-name Recipes --platform ios --scheme Recipes
+```
+
+### Preview without writing
+
+```bash
+bash <skill-path>/../scripts/install.sh --dry-run
+```
+
+### Reinstall / upgrade
+
+```bash
+bash <skill-path>/../scripts/install.sh --force
+```
 
 ## Build Workflow
 
