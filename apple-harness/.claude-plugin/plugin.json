@@ -7,6 +7,7 @@
   },
   "license": "MIT",
   "keywords": [
+    "apple",
     "ios",
     "macos",
     "xcode",
@@ -15,6 +16,7 @@
     "simulator",
     "native",
     "swiftui",
-    "uikit"
+    "uikit",
+    "appkit"
   ]
 }
