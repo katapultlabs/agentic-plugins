@@ -29,6 +29,8 @@ Add the Katapult marketplace, then install:
 | `/site:publish` | Put your site online |
 | `/site:my-site` | See your site's status and URL |
 | `/site:invite` | Add someone to your project |
+| `/site:new-change` | Start working on a new change |
+| `/site:submit` | Submit your changes for review |
 | `/site:fix` | Something not working? Run this |
 
 ## Requirements

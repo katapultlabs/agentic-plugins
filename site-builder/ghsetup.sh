@@ -147,6 +147,10 @@ _update_state_field() {
   jq "$1" "$STATE_FILE" > "$tmp" && mv "$tmp" "$STATE_FILE"
 }
 
+_current_branch() {
+  git branch --show-current 2>/dev/null || echo ""
+}
+
 _generate_commit_message() {
   local stats
   stats=$(git diff --cached --stat --no-color 2>/dev/null || echo "")
@@ -562,6 +566,146 @@ cmd_doctor() {
   echo "{\"ok\":$all_ok,$joined}"
 }
 
+cmd_branch() {
+  local description=""
+
+  while [[ $# -gt 0 ]]; do
+    description="$*"
+    break
+  done
+
+  _require_gh
+  _require_git
+  _require_auth
+  _require_state
+  _read_state
+
+  # Derive branch name from description, or generate a timestamped one
+  local branch_name
+  if [[ -n "$description" ]]; then
+    branch_name=$(echo "$description" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9 ]//g' | sed 's/  */ /g' | sed 's/ /-/g' | cut -c1-50)
+    branch_name="${branch_name%-}"  # trim trailing dash
+  else
+    branch_name="change-$(date +%Y%m%d-%H%M%S)"
+  fi
+
+  local parent_branch
+  parent_branch=$(_current_branch)
+  if [[ -z "$parent_branch" ]]; then
+    parent_branch="main"
+  fi
+
+  # Check if branch already exists
+  if git show-ref --verify --quiet "refs/heads/$branch_name" 2>/dev/null; then
+    local suffix
+    suffix=$(date +%s | tail -c 5)
+    branch_name="${branch_name}-${suffix}"
+  fi
+
+  # Check for unsaved changes
+  local has_unsaved="false"
+  if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+    has_unsaved="true"
+  fi
+  local untracked
+  untracked=$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "$untracked" -gt 0 ]]; then
+    has_unsaved="true"
+  fi
+
+  if [[ "$has_unsaved" == "true" ]]; then
+    echo '{"ok":false,"error":"unsaved_changes","message":"You have unsaved work. Save it first before starting a new change.","parent_branch":"'"$parent_branch"'"}'
+    return 1
+  fi
+
+  # Create and switch to the new branch
+  if ! git checkout -b "$branch_name" 2>/dev/null; then
+    echo '{"ok":false,"error":"branch_failed","message":"Could not start a new change. Something went wrong."}'
+    return 1
+  fi
+
+  # Push the branch so it exists on GitHub
+  if ! git push -u origin "$branch_name" -q 2>/dev/null; then
+    echo '{"ok":false,"error":"push_failed","message":"Created the change locally but could not upload it. Check your internet connection."}'
+    return 1
+  fi
+
+  # Store parent branch in state
+  _update_state_field ".parent_branch = \"$parent_branch\" | .current_branch = \"$branch_name\""
+
+  echo '{"ok":true,"branch":"'"$branch_name"'","parent_branch":"'"$parent_branch"'","message":"Ready to work on: '"$description"'"}'
+}
+
+cmd_pr() {
+  local title="${1:-}"
+
+  _require_gh
+  _require_git
+  _require_auth
+  _require_state
+  _read_state
+
+  local current
+  current=$(_current_branch)
+
+  # Read parent branch from state, fall back to main
+  local parent_branch
+  parent_branch=$(jq -r '.parent_branch // ""' "$STATE_FILE" 2>/dev/null || echo "")
+  if [[ -z "$parent_branch" || "$parent_branch" == "null" ]]; then
+    parent_branch="main"
+  fi
+
+  # Don't allow PR from the parent branch to itself
+  if [[ "$current" == "$parent_branch" ]]; then
+    echo '{"ok":false,"error":"no_changes_branch","message":"You are on the base branch. Start a new change first before submitting."}'
+    return 1
+  fi
+
+  # Save any pending work first
+  git add -A
+  if ! git diff --cached --quiet 2>/dev/null; then
+    if ! _scan_for_secrets; then
+      git reset HEAD -- . &>/dev/null
+      return 1
+    fi
+    local msg
+    msg=$(_generate_commit_message)
+    git commit -q -m "$msg"
+    git push -q 2>/dev/null || true
+  fi
+
+  # Generate a PR title if not provided
+  if [[ -z "$title" ]]; then
+    # Use the branch name as a readable title
+    title=$(echo "$current" | sed 's/-/ /g' | sed 's/\b\(.\)/\u\1/')
+  fi
+
+  # Check if a PR already exists for this branch
+  local existing_pr
+  existing_pr=$(gh pr view "$current" --json url --jq '.url' 2>/dev/null || echo "")
+  if [[ -n "$existing_pr" ]]; then
+    echo '{"ok":true,"already_exists":true,"pr_url":"'"$existing_pr"'","message":"A review request already exists for this change."}'
+    return 0
+  fi
+
+  # Create the PR
+  local pr_output
+  if ! pr_output=$(gh pr create \
+    --base "$parent_branch" \
+    --head "$current" \
+    --title "$title" \
+    --body "Changes from $current" \
+    2>&1); then
+    echo '{"ok":false,"error":"pr_failed","message":"Could not submit your changes for review.","details":"'"$(echo "$pr_output" | sed 's/"/\\"/g')"'"}'
+    return 1
+  fi
+
+  # pr_output should be the PR URL
+  local pr_url="$pr_output"
+
+  echo '{"ok":true,"pr_url":"'"$pr_url"'","base":"'"$parent_branch"'","head":"'"$current"'","title":"'"$title"'"}'
+}
+
 # ---------------------------------------------------------------------------
 # Router
 # ---------------------------------------------------------------------------
@@ -573,8 +717,10 @@ case "${1:-help}" in
   status)  cmd_status ;;
   collab)  cmd_collab "${2:-add}" "${3:-}" ;;
   doctor)  cmd_doctor ;;
+  branch)  shift; cmd_branch "$@" ;;
+  pr)      cmd_pr "${2:-}" ;;
   *)
-    echo '{"ok":false,"error":"unknown_command","usage":"ghsetup [init|save|deploy|status|collab|doctor]"}'
+    echo '{"ok":false,"error":"unknown_command","usage":"ghsetup [init|save|deploy|status|collab|doctor|branch|pr]"}'
     exit 1
     ;;
 esac

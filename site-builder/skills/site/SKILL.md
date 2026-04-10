@@ -17,7 +17,7 @@ All commands return JSON. Parse the JSON and translate the result into a friendl
 
 ## Golden rules
 
-1. **No jargon.** Never say: repo, commit, push, pull, branch, merge, clone, fork, staged, HEAD, remote, origin. Instead say: project, save, upload, download, copy, version, changes.
+1. **No jargon.** Never say: repo, commit, push, pull, branch, merge, clone, fork, staged, HEAD, remote, origin, pull request, PR, checkout. Instead say: project, save, upload, download, copy, version, changes, workspace, review request, submitted.
 2. **No git commands visible.** The user should never see `git add`, `git commit`, `git push`, or any git command in your responses. Run them silently.
 3. **No raw errors.** If a command fails, read the JSON error and explain what happened in plain language with a concrete next step.
 4. **Never commit secrets.** Before any save/deploy, remind yourself: the repo is PUBLIC. Never stage `.env` files, API keys, tokens, passwords, or private keys. The `.gitignore` handles most cases, but if you see the user putting secrets directly in HTML/JS/CSS files, warn them and help them move the sensitive data to `.env` instead.
@@ -78,6 +78,21 @@ Be honest and reassuring:
 2. Parse the result and explain which parts are working and which need fixing.
 3. Offer concrete next steps for each issue.
 
+### "I want to make a change" / "new change" / "work on something new" / "start a change"
+
+1. Derive a short description from the conversation context — what the user has been asking for, what they said they want to work on, or the nature of the changes. You should always be able to come up with something reasonable. Pass it to the branch command.
+2. Run `bash ${CLAUDE_PLUGIN_ROOT}/ghsetup.sh branch <description>`
+3. If `unsaved_changes`: "You have some unsaved work. Want me to save that first?"
+   - If they say yes, run save, then re-run branch.
+4. On success: "You're all set! You're now working on: [description]. Any changes you make here are separate from the current version — nothing goes live until your team reviews it. When you're done, just say 'submit my changes' or use `/site:submit`."
+
+### "Submit my changes" / "send for review" / "I'm done" / "submit this"
+
+1. Run `bash ${CLAUDE_PLUGIN_ROOT}/ghsetup.sh pr`
+2. On success: "Your changes have been submitted for review! Here's the link: [URL]. Share it with your team — once they approve, the changes will go live."
+3. If `already_exists`: "You already submitted this for review. Here's the link: [URL]."
+4. If `no_changes_branch`: "You haven't started a new change yet. Want me to set one up? Just tell me what you'd like to work on."
+
 ### "Start over" / "delete this project" / "new project from scratch"
 
 1. Explain: "I can set you up with a fresh project in a new folder. The old project will still exist on GitHub — I'll leave it there in case you want it later."
@@ -107,12 +122,17 @@ Before running `ghsetup.sh save` or `ghsetup.sh deploy`:
 | `pages_failed` | "I couldn't turn on the website hosting. Make sure your project has an index.html file." |
 | `collab_failed` | "I couldn't add that person. Double-check their GitHub username and try again." |
 | `auth_failed` | "I couldn't detect your account. Let's try connecting your GitHub account again." |
+| `unsaved_changes` | "You have unsaved work. Want me to save it first before starting something new?" |
+| `branch_failed` | "Something went wrong setting up your workspace. Let me check what happened..." |
+| `no_changes_branch` | "You haven't started a new change yet. Use `/site:new-change` to start working on something." |
+| `pr_failed` | "I couldn't submit your changes for review. Let me check what's wrong..." |
 
 ## Things you should NEVER do
 
 - Never run `git` commands directly — always use `ghsetup.sh` which handles errors and returns JSON.
 - Never show the user a GitHub URL and ask them to "configure settings" or "go to the repo settings page."
 - Never suggest they install anything manually — the setup script handles all dependencies.
-- Never create branches. Everything goes on main. This is not a team engineering workflow.
+- Never create branches directly with git — always use `ghsetup.sh branch` which handles naming, tracking, and pushing.
 - Never set up CI/CD, GitHub Actions, or any automation. This is for simple static sites.
 - Never suggest frameworks, bundlers, or build tools. Plain HTML, CSS, and JS only.
+- Never ask the user to resolve merge conflicts — if one occurs, explain in plain language and suggest they ask their team for help.
