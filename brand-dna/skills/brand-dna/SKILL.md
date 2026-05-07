@@ -6,13 +6,16 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob, WebFetch
 
 # brand-dna
 
-You are capturing a brand's identity from a live website and persisting it into the user's current repository as three artifacts:
+You are capturing a brand's identity from a live website and persisting it into the user's current repository as four artifacts:
 
-1. **`DESIGN.md`** at repo root — visual system (Google Stitch DESIGN.md spec).
-2. **`BRAND_VOICE.md`** at repo root — voice / tone with verbatim copy.
-3. **`.claude/skills/<brand-slug>-brand/SKILL.md`** — project-specific skill that auto-loads both files for every UI/copy task in this repo.
+1. **`tokens.dtcg.json`** at repo root — machine-readable design tokens in [DTCG (W3C Design Tokens Community Group)](https://design-tokens.github.io/community-group/format/) format. The canonical source of truth for downstream tooling (Style Dictionary, Tailwind, Token Studio, Figma Variables import, custom build scripts).
+2. **`DESIGN.md`** at repo root — human-readable wrapper around the JSON. References tokens by name, with hex/value tables for quick lookup. Google Stitch DESIGN.md spec format.
+3. **`BRAND_VOICE.md`** at repo root — voice / tone with verbatim copy.
+4. **`.claude/skills/<brand-slug>-brand/SKILL.md`** — project-specific skill that auto-loads all three files for every UI/copy task in this repo.
 
 Raw extraction artifacts go to `.brand-extraction/` (gitignored).
+
+**Source-of-truth rule.** When the JSON and the markdown disagree (e.g. a manual edit drifted), `tokens.dtcg.json` wins on values; `DESIGN.md` wins on rules / do-don'ts. The project SKILL.md tells future agents this explicitly.
 
 This skill runs in the user's *current* working directory — not the marketplace repo. Always confirm the working directory is the project where the brand should land before writing files.
 
@@ -44,10 +47,10 @@ command -v npx
 
 If absent: tell the user "I need `node` / `npx` to run the design-token extractor. Install Node and re-invoke." Stop.
 
-Run dembrandt against the URL. It opens the page in headless Chromium and emits both a JSON dump and a draft DESIGN.md:
+Run dembrandt against the URL. It opens the page in headless Chromium and emits a JSON dump, a draft DESIGN.md, AND a DTCG-spec token file:
 
 ```bash
-npx -y dembrandt@latest --design-md --save-output "{URL}"
+npx -y dembrandt@latest --design-md --dtcg --save-output "{URL}"
 ```
 
 Output lands in `./output/<host>/`. Move it into `.brand-extraction/`:
@@ -57,6 +60,8 @@ mkdir -p .brand-extraction
 mv output/<host>/* .brand-extraction/ 2>/dev/null
 rmdir output/<host> output 2>/dev/null
 ```
+
+If the user passed `--with-css` or `--with-tailwind`, also pass `--css` or `--tailwind` to dembrandt — those flags emit additional `tokens.css` and `tokens.tailwind.json` files that some teams want for direct consumption.
 
 If dembrandt fails (`--help` shows an unknown flag, or the network is blocked, or Chromium can't launch), continue with WebFetch only and tell the user "Visual extraction failed; using a copy-only capture. You'll need to fill in colors and fonts manually."
 
@@ -78,7 +83,79 @@ Pick the most-likely about / story / product pages and fetch one or two.
 
 ## Step 3 — synthesize the artifacts
 
-Read the dembrandt JSON (the timestamped file in `.brand-extraction/`) and the WebFetch results. Synthesize:
+Read the dembrandt outputs in `.brand-extraction/` and the WebFetch results. Synthesize three (or four) files at the project root.
+
+### `tokens.dtcg.json` (repo root) — write this FIRST
+
+This is the canonical, machine-readable source of truth. Downstream tooling (Style Dictionary, Tailwind, Figma Variables) parses this file; everything else is a wrapper.
+
+If dembrandt produced a DTCG output (look for `*.dtcg.json` or a file with `$value` keys in `.brand-extraction/`), copy it to the project root as `tokens.dtcg.json`. Validate it parses:
+
+```bash
+python3 -m json.tool tokens.dtcg.json > /dev/null && echo "tokens.dtcg.json: valid" || echo "INVALID"
+```
+
+If dembrandt's DTCG output isn't strictly DTCG-spec-compliant (e.g., missing `$type` keys), reshape to this skeleton — fill the values from the dembrandt JSON dump and assign `$type` per token category (`color`, `dimension`, `fontFamily`, `fontWeight`, `typography`, `shadow`, `duration`, `cubicBezier`):
+
+```json
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "color": {
+    "{brand}": {
+      "ink":   { "$value": "#xxxxxx", "$type": "color", "$description": "Primary text, headers, secondary buttons" },
+      "{accent}": { "$value": "#xxxxxx", "$type": "color", "$description": "Brand signature; one primary action per screen" },
+      "cream": { "$value": "#xxxxxx", "$type": "color", "$description": "Default page background" }
+    },
+    "semantic": {
+      "success": { "$value": "#xxxxxx", "$type": "color" },
+      "warning": { "$value": "#xxxxxx", "$type": "color" },
+      "error":   { "$value": "#xxxxxx", "$type": "color" }
+    }
+  },
+  "spacing": {
+    "xs": { "$value": "4px", "$type": "dimension" },
+    "s":  { "$value": "8px", "$type": "dimension" },
+    "m":  { "$value": "16px", "$type": "dimension" },
+    "l":  { "$value": "24px", "$type": "dimension" },
+    "xl": { "$value": "32px", "$type": "dimension" }
+  },
+  "borderRadius": {
+    "xs":   { "$value": "2px",   "$type": "dimension" },
+    "s":    { "$value": "4px",   "$type": "dimension" },
+    "m":    { "$value": "8px",   "$type": "dimension" },
+    "pill": { "$value": "30px",  "$type": "dimension", "$description": "Brand button radius" },
+    "full": { "$value": "999px", "$type": "dimension" }
+  },
+  "fontFamily": {
+    "display": { "$value": "Clash Display, -apple-system, system-ui, sans-serif", "$type": "fontFamily" },
+    "body":    { "$value": "Barlow, -apple-system, system-ui, sans-serif", "$type": "fontFamily" },
+    "label":   { "$value": "Barlow Condensed, -apple-system, system-ui, sans-serif", "$type": "fontFamily" }
+  },
+  "typography": {
+    "displayXl": {
+      "$value": { "fontFamily": "{fontFamily.display}", "fontWeight": 600, "fontSize": "66px", "lineHeight": "1.20" },
+      "$type": "typography"
+    },
+    "displayL": {
+      "$value": { "fontFamily": "{fontFamily.display}", "fontWeight": 600, "fontSize": "50px", "lineHeight": "1.20" },
+      "$type": "typography"
+    },
+    "body": {
+      "$value": { "fontFamily": "{fontFamily.body}", "fontWeight": 500, "fontSize": "15px", "lineHeight": "1.55" },
+      "$type": "typography"
+    }
+  },
+  "shadow": {
+    "card": { "$value": "0 2px 8px rgba(0,0,0,0.10)", "$type": "shadow" },
+    "lift": { "$value": "0 5px 15px rgba(0,0,0,0.10)", "$type": "shadow" }
+  }
+}
+```
+
+Token-naming rules:
+- The accent / signature color should be named after the brand's actual term for it (`lit.lime`, `linear.electric`, `stripe.indigo`) when the source uses one. Default to a descriptive name (`lit.accent`) only if no brand term exists.
+- Group semantic colors under `color.semantic` so brand colors and semantic colors don't fight in the namespace.
+- Typography composite tokens (`displayXl`, `body`) reference `fontFamily.*` by name; downstream tools resolve the references.
 
 ### `DESIGN.md` (repo root)
 
@@ -104,23 +181,29 @@ Use this exact structure. Fill `{placeholders}` from the extraction. Drop sectio
 - **Reverse:** {if a light-on-dark variant exists}
 - **Clear space:** ≥ 1× cap-height on all sides (default; override if the brand publishes a different rule)
 
+## Tokens (machine-readable)
+
+The canonical source of truth is [`./tokens.dtcg.json`](./tokens.dtcg.json) — DTCG-spec design tokens. Downstream tools read it directly. This document references tokens by their JSON path (e.g. `color.{brand}.ink`).
+
+If a hex / value in this doc disagrees with the JSON, **the JSON wins**.
+
 ## Colors
 
 ### Core palette
 
 | Token | Hex | Usage | Source weight |
 |-------|-----|-------|---------------|
-| `{brand}/ink` | `#xxxxxx` | Primary text, headers | {N occurrences} |
-| `{brand}/{accent}` | `#xxxxxx` | Primary CTA fill | {N occurrences} |
+| `color.{brand}.ink` | `#xxxxxx` | Primary text, headers | {N occurrences} |
+| `color.{brand}.{accent}` | `#xxxxxx` | Primary CTA fill | {N occurrences} |
 | ... | ... | ... | ... |
 
 ### Semantic
 
 | Token | Hex | Notes |
 |-------|-----|-------|
-| `{brand}/success` | `#xxxxxx` | |
-| `{brand}/warning` | `#xxxxxx` | |
-| `{brand}/error` | `#xxxxxx` | |
+| `color.semantic.success` | `#xxxxxx` | |
+| `color.semantic.warning` | `#xxxxxx` | |
+| `color.semantic.error` | `#xxxxxx` | |
 
 ### Rules
 
@@ -143,8 +226,8 @@ Use this exact structure. Fill `{placeholders}` from the extraction. Drop sectio
 
 | Token | Size | Family | Weight | Line-height | Transform |
 |-------|------|--------|--------|-------------|-----------|
-| `display/xl` | {Npx} | {family} | {weight} | {lh} | {transform} |
-| `display/l` | ... | ... | ... | ... | ... |
+| `typography.displayXl` | {Npx} | {family} | {weight} | {lh} | {transform} |
+| `typography.displayL` | ... | ... | ... | ... | ... |
 | ... | ... | ... | ... | ... | ... |
 
 ### Rules
@@ -161,12 +244,12 @@ Use this exact structure. Fill `{placeholders}` from the extraction. Drop sectio
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `radius/xs` | {Npx} | inline tags |
-| `radius/s` | {Npx} | cards (secondary) |
-| `radius/m` | {Npx} | cards (primary) |
-| `radius/{signature}` | {Npx} | **buttons (default)**, primary CTAs |
-| `radius/full` | 999px | pills |
-| `radius/circle` | 50% | avatars, icon buttons |
+| `borderRadius.xs` | {Npx} | inline tags |
+| `borderRadius.s` | {Npx} | cards (secondary) |
+| `borderRadius.m` | {Npx} | cards (primary) |
+| `borderRadius.pill` | {Npx} | **buttons (default)**, primary CTAs |
+| `borderRadius.full` | 999px | pills |
+| `borderRadius.circle` | 50% | avatars, icon buttons |
 
 {One-line note about which radius is the brand signature, if obvious.}
 
@@ -174,8 +257,8 @@ Use this exact structure. Fill `{placeholders}` from the extraction. Drop sectio
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `shadow/card` | `{value}` | default card |
-| `shadow/lift` | `{value}` | hover, lifted modals |
+| `shadow.card` | `{value}` | default card |
+| `shadow.lift` | `{value}` | hover, lifted modals |
 
 ## Components
 
@@ -212,6 +295,26 @@ For native iOS / watchOS / Android, map to platform size classes; the visual lan
 
 {Detected icon system, e.g., "Font Awesome on web; SF Symbols on Apple platforms with weight `medium` to match {body family}."}
 
+## Consuming the tokens
+
+The `tokens.dtcg.json` file is consumable by:
+
+- **Direct import** (no build step): React, SwiftUI (via Codable), Kotlin, plain JS — walk the JSON at runtime.
+- **Style Dictionary** (`v4+`): drop in a `style-dictionary.config.js`, run `style-dictionary build` to generate `tokens.css`, `Tokens.swift`, `tokens.kt`, etc. Recipe:
+  ```js
+  // style-dictionary.config.js
+  export default {
+    source: ['tokens.dtcg.json'],
+    platforms: {
+      css:    { transformGroup: 'css',    buildPath: 'build/', files: [{ destination: 'tokens.css', format: 'css/variables' }] },
+      swift:  { transformGroup: 'ios-swift', buildPath: 'build/', files: [{ destination: 'Tokens.swift', format: 'ios-swift/class.swift', className: 'Tokens' }] },
+      kotlin: { transformGroup: 'compose', buildPath: 'build/', files: [{ destination: 'Tokens.kt', format: 'compose/object', className: 'Tokens', packageName: 'com.{brand}.tokens' }] }
+    }
+  }
+  ```
+- **Tailwind**: import the JSON in `tailwind.config.js` and map under `theme.extend.colors` / `theme.extend.fontFamily`.
+- **Figma Variables**: use the [Figma Tokens plugin](https://docs.tokens.studio) to import `tokens.dtcg.json` directly.
+
 ## Voice
 
 This is the visual system only. For tone, copy patterns, taglines, and messaging rules, see [`BRAND_VOICE.md`](./BRAND_VOICE.md).
@@ -228,7 +331,7 @@ This is the visual system only. For tone, copy patterns, taglines, and messaging
 ## How agents should use this file
 
 When asked to build UI for the {Brand Name} project, an agent should:
-1. Pull tokens from this file before generating any styling.
+1. Read `tokens.dtcg.json` for the canonical values, then this file for the rules and component specs.
 2. Default to {primary background}, {primary text color}, {display family} headlines, {body family} body.
 3. Reserve {accent token} for the single primary action per view.
 4. Read [`BRAND_VOICE.md`](./BRAND_VOICE.md) for any user-facing copy.
@@ -398,7 +501,7 @@ Where `<brand-slug>` is a kebab-case slug derived from the brand name (`Lit Salt
 ```markdown
 ---
 name: {brand-slug}-brand
-description: Apply the {Brand Name} ({URL}) brand identity - colors, typography, components, voice, and tone - to any artifact in this repo. Triggers on requests to design, style, write copy, or build UI for {Brand Name}. Pulls DESIGN.md (visual system) and BRAND_VOICE.md (voice/tone) into context automatically.
+description: Apply the {Brand Name} ({URL}) brand identity - tokens, typography, components, voice, and tone - to any artifact in this repo. Triggers on requests to design, style, write copy, or build UI for {Brand Name}. Auto-loads tokens.dtcg.json, DESIGN.md, and BRAND_VOICE.md into context.
 allowed-tools: Read, Edit, Write, Bash, Grep, Glob
 ---
 
@@ -408,19 +511,22 @@ You have been invoked because the user is doing work on the {Brand Name} project
 
 ## Step 1 — load brand DNA
 
-Before any visual / UI work or user-facing copy, read these files at the project root:
+Before any visual / UI work or user-facing copy, read these files at the project root, in order:
 
-1. `DESIGN.md` — colors, typography, spacing, radii, components, do/don'ts
-2. `BRAND_VOICE.md` — voice attributes, gold-standard copy, vocabulary rules, sentence patterns
+1. `tokens.dtcg.json` — **canonical** machine-readable design tokens (colors, type, spacing, radii, shadows). DTCG-spec.
+2. `DESIGN.md` — human/AI-readable wrapper: rules, do/don'ts, component specs, how to consume the tokens.
+3. `BRAND_VOICE.md` — voice attributes, gold-standard copy, vocabulary rules, sentence patterns.
 
-If either file is missing, stop and tell the user the brand DNA hasn't been extracted yet. Do not proceed with guesses.
+**Source of truth**: when `tokens.dtcg.json` and `DESIGN.md` show different values for the same token, `tokens.dtcg.json` wins. `DESIGN.md` is the rules layer; the JSON is the values layer.
+
+If `tokens.dtcg.json` is missing, stop and tell the user "the brand DNA hasn't been extracted yet — run `/brand-dna {URL}` from the marketplace." Do not proceed with guesses.
 
 ## Step 2 — apply
 
 When the task involves **visual styling** (UI, layouts, components, marketing assets):
-- Pull tokens directly from `DESIGN.md`.
-- Reserve {accent token} for the single most-important action per view.
-- For native platforms, map web fonts to closest equivalents only if the brand fonts aren't bundled — note the substitution in a comment.
+- Reference token names from `tokens.dtcg.json` (e.g. `color.{brand}.ink`), not hex values, in any code you generate. The build pipeline resolves names to platform values; hard-coded hexes drift.
+- Reserve `color.{brand}.{accent}` for the single most-important action per view.
+- For native platforms without a tokens build pipeline, copy the resolved value once into a `Color` extension named after the token (e.g. `Color.brandInk`). Don't sprinkle hex literals.
 
 When the task involves **copy** (microcopy, push notifications, headlines, marketing):
 - Match a sentence pattern from `BRAND_VOICE.md`.
@@ -430,9 +536,10 @@ When the task involves **copy** (microcopy, push notifications, headlines, marke
 
 ## Step 3 — self-check before emitting
 
-- [ ] Headlines use {display family}, weight {weight}.
-- [ ] Buttons use the brand's signature radius.
-- [ ] No more than one {accent token} primary action per screen.
+- [ ] Token names referenced, not raw hexes (where a build pipeline exists).
+- [ ] Headlines use the display typography token at the appropriate scale.
+- [ ] Buttons use the brand's signature radius (`borderRadius.pill` or equivalent).
+- [ ] No more than one accent-color primary action per screen.
 - [ ] No off-brand vocabulary.
 - [ ] Length budgets respected.
 
@@ -461,18 +568,21 @@ grep -q "^\.brand-extraction" .gitignore 2>/dev/null || echo ".brand-extraction/
 
 Then summarize for the user:
 
-- What was created (DESIGN.md, BRAND_VOICE.md, optional BRAND_NOTES.md, project skill).
+- What was created (`tokens.dtcg.json`, `DESIGN.md`, `BRAND_VOICE.md`, optional `BRAND_NOTES.md`, project skill).
 - One-sentence headline observation about the brand (e.g., "Voice is direct and selective — `No es para todos`. Lime accent for primary actions only.").
-- One concrete next step (e.g., "Try `/<brand-slug>-brand: design the empty state` to see the skill in action.").
+- One concrete next step. Two good defaults:
+  - "Try `/<brand-slug>-brand: design the empty state` to see the skill in action."
+  - "Pipe `tokens.dtcg.json` into Style Dictionary or Tailwind to ship the tokens to your UI code."
 
 ## Refresh flow
 
 When invoked with `--refresh` or when the user explicitly asks to refresh:
 
 1. Re-run dembrandt and WebFetch as in Steps 1-2.
-2. Diff the new extraction against existing `DESIGN.md` and `BRAND_VOICE.md`. Report the substantive changes (new colors, changed taglines, new pillars).
-3. Ask: `update` (merge new findings, keep manual edits) or `replace` (overwrite). Default to `update`.
-4. On `update`, only write the deltas — don't blow away custom rules / examples the user added by hand.
+2. Always overwrite `tokens.dtcg.json` — it is machine-generated and shouldn't carry manual edits. If a user did edit it (rename a token, add a description), preserve those by reading the existing file first, capturing the diff against the new extraction, and asking before overwriting.
+3. Diff the new extraction against existing `DESIGN.md` and `BRAND_VOICE.md`. Report the substantive changes (new colors, changed taglines, new pillars).
+4. Ask: `update` (merge new findings, keep user-curated rules / examples) or `replace` (overwrite). Default to `update`.
+5. On `update`, only write the deltas to `DESIGN.md` and `BRAND_VOICE.md` — don't blow away custom rules / examples the user added by hand.
 
 ## Brand-class adaptation
 
@@ -487,7 +597,8 @@ Detect the class from the homepage; ask if ambiguous.
 
 ## Failure modes
 
-- **dembrandt times out / Chromium fails to launch.** Continue with WebFetch only, mark the visual sections as `(needs manual review)`, tell the user.
+- **dembrandt times out / Chromium fails to launch.** Continue with WebFetch only, mark the visual sections as `(needs manual review)`, tell the user. Do NOT write a placeholder `tokens.dtcg.json` — better to ship without it than ship invalid tokens.
+- **dembrandt's `--dtcg` output is malformed** (missing `$type` keys or non-DTCG shape). Reshape using the skeleton in Step 3 before writing to the project root. Validate JSON parses before declaring success.
 - **WebFetch returns a paywall / authentication wall.** Try the sitemap to find an open page; if everything is gated, ask the user for a public mirror URL or to share an HTML export.
 - **Source language is not the language we asked about.** Override the user's stated language with what the source actually uses; tell the user which language we used.
 - **Brand has multiple sub-brands on the same domain** (e.g., a parent company with several products). Ask which sub-brand the user wants captured before extracting.
@@ -496,6 +607,7 @@ Detect the class from the homepage; ask if ambiguous.
 ## Don'ts
 
 - Don't fabricate hex codes, fonts, or pillars. If the source doesn't supply something, leave the field as `{needs manual review}` rather than guessing.
+- Don't ship a `tokens.dtcg.json` with placeholder values. Either ship a valid file with real values, or ship without it and tell the user.
 - Don't impose generic startup voice attributes ("approachable, friendly, modern") if the source clearly isn't those things.
 - Don't translate gold-standard copy. If the brand is in German, the verbatim quotes stay in German.
 - Don't write to a directory you haven't confirmed is the user's project. Always `pwd` first.
