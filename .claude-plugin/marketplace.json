@@ -46,6 +46,12 @@
       "source": "./apple-harness",
       "description": "Build, test, and run native Apple platform apps (iOS, macOS) from Claude Code with agent-isolated builds, simulator auto-resolution, and strict Swift 6 defaults.",
       "version": "0.2.0"
+    },
+    {
+      "name": "brand-dna",
+      "source": "./brand-dna",
+      "description": "Capture a brand's identity (visual system + voice) from any URL into agent-readable DESIGN.md and BRAND_VOICE.md files, plus an auto-applying project skill.",
+      "version": "0.1.0"
     }
   ]
 }

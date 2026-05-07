@@ -33,6 +33,7 @@ Go to the **Discover** tab to see all plugins from this marketplace, or install 
 | [site-builder](./site-builder) | GitHub for everyone — helps non-technical users create, save, and publish web projects to GitHub Pages |
 | [engineering-harness](./engineering-harness) | Environment preflight, repo scaffolding, and workflow enforcement for human+agent collaboration |
 | [apple-harness](./apple-harness) | Build, test, and run native Apple platform apps (iOS, macOS) with agent-isolated builds and strict Swift 6 defaults |
+| [brand-dna](./brand-dna) | Capture a brand's visual system and voice from any URL into agent-readable DESIGN.md, BRAND_VOICE.md, and a project skill |
 
 ## Using a plugin
 
