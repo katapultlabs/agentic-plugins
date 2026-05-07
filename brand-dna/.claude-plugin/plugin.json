@@ -1,9 +1,9 @@
 {
   "name": "brand-dna",
-  "version": "0.1.0",
-  "description": "Capture a brand's identity (visual system + voice) from any URL into agent-readable DESIGN.md and BRAND_VOICE.md files, plus an auto-applying project skill.",
+  "version": "0.2.0",
+  "description": "Capture a brand's identity from any URL into agent-readable artifacts: DTCG-spec tokens.dtcg.json, DESIGN.md, BRAND_VOICE.md, and an auto-applying project skill.",
   "author": {
     "name": "Katapult Labs"
   },
-  "keywords": ["brand", "design-system", "design.md", "voice", "tone", "extraction", "agentic"]
+  "keywords": ["brand", "design-system", "design-tokens", "dtcg", "style-dictionary", "design.md", "voice", "tone", "extraction", "agentic"]
 }
