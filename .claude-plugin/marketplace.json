@@ -39,7 +39,7 @@
       "name": "harness",
       "source": "./engineering-harness",
       "description": "Opinionated environment preflight, repo scaffolding, and workflow enforcement for teams where humans and agents collaborate as peers.",
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     {
       "name": "apple-harness",

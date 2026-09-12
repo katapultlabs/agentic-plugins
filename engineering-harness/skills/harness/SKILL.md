@@ -11,9 +11,13 @@ description: >
   "harness setup", "environment check", "preflight", "plugin check",
   "CLAUDE.md check", "repo structure", "agentic setup", or when starting
   any new session where project context should be loaded first.
+  Also triggers when someone asks how to plan, break down, sequence,
+  estimate, or parallelize a big piece of work with agents: "how long
+  will this take", "how should we split this", "plan this feature",
+  "what can run in parallel", "give me a roadmap", "estimate this".
   Use this skill liberally — if someone is asking about onboarding,
   project setup, or workflow hygiene, this is the skill to use.
-version: 0.1.0
+version: 0.2.0
 ---
 
 # Harness
@@ -75,6 +79,12 @@ as-is. Either way, check for and offer to append the workflow rules.
 5. **Workflow rules** — are the four Linear workflow rules present
    (see Part 3)? If missing, offer to append from
    `references/claude-md-rules.md` (Block 2).
+6. **Planning and estimation** — does it say plans carry no time
+   estimates and default to parallel execution? If missing, offer to
+   append from `references/claude-md-rules.md` (Block 3). The full
+   reasoning, procedure, and planning prompt live in
+   `references/agentic-planning.md`; point collaborators there when
+   they ask how to break down or sequence a big piece of work.
 
 ### 1.2 — Linear MCP
 
@@ -330,7 +340,13 @@ collaboration actually work. Every issue tells its own story.
 ## Reference Files
 
 - **`references/claude-md-rules.md`** — append blocks for CLAUDE.md
-  (automatic behaviors + workflow rules)
+  (automatic behaviors + workflow rules + planning and estimation)
+- **`references/agentic-planning.md`** — how to break down, sequence,
+  and parallelize big work when agents build it: no time estimates,
+  dependency-and-risk ordering, batches with exit gates, fan-out limits,
+  a planning prompt, and a worked example. Read it whenever someone asks
+  "how should we plan this," "how long will this take," or "how do we
+  split this up"
 - **`references/claude-md-router-example.md`** — complete example of a
   well-structured 82-line CLAUDE.md following the router pattern
 - **`references/templates/prd-template.md`** — PRD template
