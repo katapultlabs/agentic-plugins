@@ -429,7 +429,8 @@ load himself.
 
 ## What to notice
 
-- Across three days and 146 turns, the lead typed about 4,500 words.
+- Across three sittings, about seven active hours, and 146 turns, the
+  lead typed about 4,500 words.
   Half the turns are "go", "perfect", "how we looking", or a command he
   ran himself. The direction lives in perhaps twenty turns.
 - Every correction carries its reason. "That's silly" is always
@@ -439,6 +440,7 @@ load himself.
   Playwright question).
 - The moments that compounded (moves 2, 11, 15) are the ones where a
   correction left the chat and became a file.
-- The costs are visible too: the handback rule that stayed in chat
-  instead of the plan, the audience named after the artifact, and the
-  prior that the review had to overrule.
+- The costs are visible too: the plan declared ready for handoff
+  without being read in its slice shape, the handback rule that stayed
+  in chat instead of the plan, the audience named after the artifact,
+  and the prior that the review had to overrule.

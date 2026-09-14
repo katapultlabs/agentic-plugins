@@ -408,6 +408,11 @@ a strong collaborator can still improve.
   in the same report were not. Spot-checks depend on the human noticing.
   A standing rule ("every number in a report cites its source") does
   not.
+- **The handoff was declared ready unread.** The plan's eleven-slice
+  shape, which the lead would not have accepted, left his hands
+  without him reading it as the engineer would. The handback rule
+  stayed in chat. Corrected on the first day of driving, three days
+  late. Principle 3 applies to the handover artifact most of all.
 - **The prior was wrong, and the evidence was allowed to say so.** The
   takeover opened with "they overengineered and lollygagged". The review
   found the pace fast against the plan's own sizing and located the

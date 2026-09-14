@@ -101,6 +101,16 @@ are prompts for where to look.
   down before each one (move 15).
 - **`span_hours` long with few human turns**: good leash, if the gates
   were real. Check what the human asked at each return.
+- **`span_hours` against `active_hours`**: span is calendar time from
+  first record to last, and a session resumed over several days spans
+  all of them, nights included; active is the sum of gaps under ten minutes between
+  turns, which approximates the time the human and the agent were
+  actually exchanging. People take breaks and leave agents running.
+  Report work in active hours and say so; a report that calls a
+  ninety-hour span "three days of work" is wrong in a way the reader
+  will notice. Idle inside a span is a finding only when it was the
+  agent waiting on the human (a stop, an approval), not when the human
+  was elsewhere.
 - **The `+Nm` gap on a human turn** is the time since their previous
   turn. Long gaps before a correction show how long a wrong direction
   was held; that is the cost figure for ranking findings.
@@ -112,7 +122,8 @@ Use this shape. Headings are fixed; keep each section short.
 ```
 # Session audit: <session id or "this conversation">
 
-<one-line facts: date, span, human turns, what was built>
+<one-line facts: date, active hours (span in brackets), human turns,
+what was built>
 Session ran on: <model(s) from the extract header>. Audited with: <your
 own model id, from your system prompt; "unknown" if you cannot tell>.
 
@@ -208,7 +219,7 @@ Report shape for a project:
 # Project audit: <project name>
 
 <one-line facts: sessions, date range, typed turns, typed words,
-total span>
+total active hours (total span in brackets)>
 Sessions ran on: <models from the index>. Audited with: <your own
 model id; "unknown" if you cannot tell>.
 

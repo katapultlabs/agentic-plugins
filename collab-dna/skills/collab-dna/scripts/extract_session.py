@@ -43,6 +43,9 @@ HOME = os.path.expanduser("~")
 PROJECTS = os.path.join(HOME, ".claude", "projects")
 
 
+ACTIVE_GAP_SECONDS = 600
+
+
 def _dt(ts):
     return datetime.fromisoformat(ts.replace("Z", "+00:00"))
 
@@ -200,7 +203,7 @@ def extract(path, out, preview, want_stats, human_only=False, names=()):
     stats = {"user_turns": 0, "user_words": 0, "assistant_turns": 0, "assistant_words": 0,
              "commands_run_by_user": 0, "slash_commands": 0, "subagent_notifications": 0,
              "compactions": 0, "questions_asked_by_user": 0, "first": None, "last": None,
-             "models": {}}
+             "models": {}, "active_hours": 0.0}
     # user_turns / user_words count only what the human typed; slash commands,
     # skill bodies and other injected records (isMeta) are listed but not counted.
     lines = [f"# Session {os.path.basename(path)[:-6]}", "", f"Source: `{path}`", "",
@@ -210,6 +213,8 @@ def extract(path, out, preview, want_stats, human_only=False, names=()):
              "output, re-sent messages, and subagent notifications are one line each and not counted. "
              "Email addresses and credentials in URLs are redacted.", ""]
     session_first = session_last = None
+    prev_any_ts = None
+    active_seconds = 0.0
     prev_user_ts = None
     prev_user_txt = None
     stats["resent_turns"] = 0
@@ -219,6 +224,11 @@ def extract(path, out, preview, want_stats, human_only=False, names=()):
         if ts and t in ("user", "assistant"):
             session_first = session_first or ts
             session_last = ts
+            if prev_any_ts:
+                gap = (_dt(ts) - _dt(prev_any_ts)).total_seconds()
+                if 0 <= gap <= ACTIVE_GAP_SECONDS:
+                    active_seconds += gap
+            prev_any_ts = ts
         msg = rec.get("message", {})
         if t == "user":
             raw = text_of(msg).strip()
@@ -286,6 +296,11 @@ def extract(path, out, preview, want_stats, human_only=False, names=()):
             lines.append(f"\n> ASSISTANT [{ts[11:16]}] ({words} words)\n> " + short.replace("\n", "\n> "))
     if session_first and session_last:
         stats["span_hours"] = round((_dt(session_last) - _dt(session_first)).total_seconds() / 3600, 1)
+    stats["active_hours"] = round(active_seconds / 3600, 1)
+    lines.insert(3, f"Calendar span from first message to last: {stats.get('span_hours', 0)} h (includes nights, breaks, "
+                    f"and days the session was not open; a resumed session spans days). Active time about "
+                    f"{stats['active_hours']} h, the sum of gaps under {ACTIVE_GAP_SECONDS // 60} minutes between turns. "
+                    f"Only the active figure is work.")
     models = ", ".join(f"{m} ({n} turns)" for m, n in sorted(stats["models"].items(), key=lambda x: -x[1]))
     lines.insert(3, f"Assistant model: {models or 'unknown'}. Subagents' models are not visible here.")
     with open(out, "w") as f:
@@ -326,7 +341,7 @@ def project(project_dir, out_dir, last, since, worktrees, min_turns, preview, na
     rows = []
     totals = {k: 0 for k in ("user_turns", "user_words", "assistant_turns", "assistant_words",
                              "questions_asked_by_user", "commands_run_by_user",
-                             "subagent_notifications", "compactions", "span_hours")}
+                             "subagent_notifications", "compactions", "span_hours", "active_hours")}
     for first, p, d in files:
         sid = os.path.basename(p)[:-6]
         full = os.path.join(out_dir, f"{sid}.md")
@@ -340,18 +355,19 @@ def project(project_dir, out_dir, last, since, worktrees, min_turns, preview, na
              f"{len(rows)} sessions, oldest first. `full` has the assistant's turns as head and tail; "
              "`human` has only the human's turns (read that first, it is much smaller). "
              "Typed turns and words exclude injected content, command output, and re-sent messages. "
-             "Sessions with fewer than five typed turns are too short to score; say so rather than scoring them.", "",
-             "| Session | Start | Worktree | Model | Typed turns | Typed words | Questions | Commands run | Subagent notifications | Compactions | Span h | Size |",
-             "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |"]
+             "Sessions with fewer than five typed turns are too short to score; say so rather than scoring them. "
+             "Span is calendar time from first message to last (a resumed session spans days); active is the sum of gaps under ten minutes between turns. Report work in active hours, never span.", "",
+             "| Session | Start | Worktree | Model | Typed turns | Typed words | Questions | Commands run | Subagent notifications | Compactions | Span h | Active h | Size |",
+             "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |"]
     for sid, start, wt, st, size in rows:
         models = ", ".join(sorted(st["models"], key=lambda k: -st["models"][k])) or "unknown"
         lines.append(f"| {sid[:8]} [full]({sid}.md) [human]({sid}.human.md) | {start} | {wt} | {models} | {st['user_turns']} | {st['user_words']} | "
                      f"{st['questions_asked_by_user']} | {st['commands_run_by_user']} | {st['subagent_notifications']} | "
-                     f"{st['compactions']} | {st.get('span_hours', 0)} | {size // 1024} KB |")
+                     f"{st['compactions']} | {st.get('span_hours', 0)} | {st.get('active_hours', 0)} | {size // 1024} KB |")
         print(f"{sid[:8]}  {start}  {st['user_turns']:4d} typed turns  {size // 1024:5d} KB full", file=sys.stderr)
     lines.append(f"| **total** | | | | {totals['user_turns']} | {totals['user_words']} | {totals['questions_asked_by_user']} | "
                  f"{totals['commands_run_by_user']} | {totals['subagent_notifications']} | {totals['compactions']} | "
-                 f"{round(totals['span_hours'], 1)} | |")
+                 f"{round(totals['span_hours'], 1)} | {round(totals['active_hours'], 1)} | |")
     print(f"{len(rows)} sessions extracted to {out_dir}", file=sys.stderr)
     index = os.path.join(out_dir, "index.md")
     with open(index, "w") as f:

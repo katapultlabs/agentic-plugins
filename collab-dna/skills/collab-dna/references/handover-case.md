@@ -13,13 +13,16 @@ while every gate passes.
 consumer product: a legacy Django app with a few thousand members,
 moving to a Next.js web app, a Node API, a new Postgres with a
 first-principles schema, and a migration done as one rehearsed cutover
-after side-by-side parity testing. In about three hours they produce
-the architecture RFC, the domain-model RFC, an inventory of the legacy
-with keep/adapt/drop verdicts, a glossary, and a plan of eleven slices
-with acceptance criteria. The plan is written as a handover: someone
-who was not in the room will execute it. The lead's instruction for the
-team shape is one line: "push as much as possible and just get back to
-me when there's a fully ready to test environment."
+after side-by-side parity testing. In under two active hours they
+produce the architecture RFC, the domain-model RFC, an inventory of the
+legacy with keep/adapt/drop verdicts, a glossary, and a plan of eleven
+slices with acceptance criteria. The plan is written as a handover:
+someone who was not in the room will execute it. The lead's instruction
+for the team shape is one line: "push as much as possible and just get
+back to me when there's a fully ready to test environment." That line
+stays in the chat. The lead declares the plan ready for handoff without
+having read it in its eleven-slice shape; by his own later account he
+would not have accepted that shape had he seen it.
 
 **Days two to four.** An engineer takes the plan and, with an agent,
 lands thirty commits: slices one through nine of eleven, each with a
@@ -29,7 +32,10 @@ with zero differences. Under three days.
 
 **Day four, afternoon.** The lead, expecting a testable environment a
 day earlier, opens a session: "My take is that they overengineered the
-build ... and they lollygagged." He asks for an independent review.
+build ... and they lollygagged." He asks for an independent review. The
+review and the correction below are committed the same afternoon, in
+about two and a half active hours, and from that point the lead drives
+the build himself.
 
 ## What the review found
 
@@ -84,13 +90,14 @@ And on process:
 > section, and parity rerun. Going forward: build everything, verify
 > continuously against the harness, and hand back once.
 
-**Day five.** The lead and the agent rebuild the web app's component
+**Day five.** In under three active hours, with agents running between
+his turns, the lead rebuilds the web app's component
 layer on the library, drop the no-JavaScript rule that had leaked from
 the legacy ("a silly requirement all around in 2026, for both the app
 and the admin"), restore parity to zero differences, add visual parity
 at five viewports, stand up staging on both hosts with production data
 loaded and verified, connect the repository so both deploy from main,
-and write the team brief and the stakeholder summary. One day. The next
+and writes the team brief and the stakeholder summary. The next
 morning the whole team, including non-technical people, smoke-tests it.
 
 ## What to take from it
@@ -102,13 +109,18 @@ morning the whole team, including non-technical people, smoke-tests it.
    was built?" (principle 4), and a provenance question for every
    inherited rule (principle 6).
 
-2. **The plan's shape drove the behaviour.** Eleven slices, each with
-   acceptance criteria, read as eleven gates. A conscientious engineer
-   cleared them one at a time, with a log entry each. The plan's author
-   had meant "build all of it, hand back once", and had even said so,
-   but in a chat, not in the plan. The fix is upstream: plans with no
-   time estimates, batches with exit gates, and "hand back once" written
-   in the plan itself. The planning guide in the `harness` plugin
+2. **The plan's shape drove the behaviour, and the handoff was the
+   miss.** Eleven slices, each with acceptance criteria, read as eleven
+   gates. A conscientious engineer cleared them one at a time, with a
+   log entry each. The lead had meant "build all of it, hand back
+   once", and had even said so, but in a chat, not in the plan, and he
+   had not reviewed the plan's shape before declaring it ready. This is
+   principle 3 applied to the handover artifact itself: read it as the
+   reader will, before it leaves your hands. He corrected it the moment
+   he started driving, which is principle 15, three days late. The fix
+   is upstream: plans with no time estimates, batches with exit gates,
+   "hand back once" written in the plan itself, and the handoff read
+   by the person handing it off. The planning guide in the `harness` plugin
    (`references/agentic-planning.md`) exists because of this case.
 
 3. **Prose outran product while every number looked good.** Five
