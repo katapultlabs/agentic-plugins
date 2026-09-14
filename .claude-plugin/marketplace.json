@@ -32,7 +32,7 @@
     {
       "name": "site",
       "source": "./site-builder",
-      "description": "GitHub for everyone — helps non-technical users create, save, and publish web projects to GitHub Pages without knowing git.",
+      "description": "GitHub for everyone \u2014 helps non-technical users create, save, and publish web projects to GitHub Pages without knowing git.",
       "version": "1.0.0"
     },
     {
@@ -52,6 +52,12 @@
       "source": "./brand-dna",
       "description": "Capture a brand's identity from any URL into agent-readable artifacts: DTCG-spec tokens.dtcg.json, DESIGN.md, BRAND_VOICE.md, and an auto-applying project skill.",
       "version": "0.2.0"
+    },
+    {
+      "name": "collab-dna",
+      "source": "./collab-dna",
+      "description": "How we build with agents, captured as sixteen auditable moves from real sessions. Audit any past Claude Code session or retro the current one.",
+      "version": "0.1.0"
     }
   ]
 }

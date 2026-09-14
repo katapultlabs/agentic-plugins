@@ -1,0 +1,139 @@
+---
+name: collab-dna
+description: "How we build with agents, captured as auditable moves. Use this whenever someone wants to get better at working with Claude Code or any coding agent: 'audit my session', 'review how I worked with you', 'retro on this conversation', 'how could I have driven this better', 'what should I improve in how I prompt', 'grade my collaboration', 'look at my last session', 'why did this take so many turns', 'am I using you well', 'show me the principles', 'how does our lead work with Claude'. Also use it when a session has just ended badly (rebuilt artifacts, many corrections, wrong direction held too long) and the human asks what went wrong, even if they do not say 'audit'. Do not use it for code review; it reviews the human's moves, not the code."
+version: 0.1.0
+allowed-tools: Bash, Read, Glob, Grep
+---
+
+# collab-dna
+
+The way one experienced lead builds with Claude Code, distilled from
+real sessions into sixteen moves, with an audit that applies them to
+any transcript. The purpose is to help an engineer see their own
+sessions the way that lead would, and to hand them the specific
+sentence they could have typed instead.
+
+Three things this skill does:
+
+1. **Audit a past session, or a whole project.** Extract a local
+   Claude Code transcript (or every transcript for the current
+   project), read the human's turns, and report which moves were made,
+   which were missed, what the misses cost, and what to write down. A
+   project audit finds what one session cannot: corrections typed in
+   several sessions, moves never made, drift over time.
+2. **Retro the current conversation.** Same audit, no extraction; the
+   transcript is already in context and you were the agent.
+3. **Show the principles.** The sixteen moves with their reasons, for
+   reading before a session rather than after.
+
+## Files
+
+| File | What it holds | Read it when |
+| --- | --- | --- |
+| `references/principles.md` | The sixteen moves, each with a verbatim example, the reason it matters, and its audit question; the counterweights; a one-paragraph version | Always, before any audit or retro |
+| `references/audit-rubric.md` | The procedure, what the stats block signals, the fixed report shape, and the tone | Before writing any audit report |
+| `references/annotated-session.md` | A real three-day session, the human's turns only, each labelled with its move | When the human asks what a strong session looks like, or when you need a reference for a move you are about to call absent |
+| `references/handover-case.md` | The case the principles came from: a handover that drifted into a port while every gate passed | When the audit touches legacy work, plan shape, or "fast but wrong direction" |
+| `scripts/extract_session.py` | Turns a Claude Code JSONL transcript into readable markdown plus a stats block; `project` mode does every session of the project into a directory with an index | For any audit of a past session or a project |
+
+## Auditing a past session
+
+Claude Code keeps every session under `~/.claude/projects/<slug>/`,
+where the slug is the working directory with `/` replaced by `-`. The
+script knows this; you do not need to find the file by hand.
+
+1. If the human did not say which session, list them and let them pick:
+   ```
+   python3 <skill-dir>/scripts/extract_session.py list
+   ```
+   Add `--all` to list every project. Newest first; each row is the
+   session id, start time, number of human turns, size, and project.
+2. Extract:
+   ```
+   python3 <skill-dir>/scripts/extract_session.py extract latest --stats
+   ```
+   `latest` picks the newest session with human turns in the current
+   project. A session id prefix or a full path also works. The script
+   prints a JSON stats block and then the output path. Read the output
+   file; it holds the human's turns in full and the assistant's turns
+   as short previews.
+3. Read `references/principles.md` and `references/audit-rubric.md`.
+4. Follow the rubric's procedure and produce the report in its shape.
+
+The extract is the human's side of the conversation. Tool calls, tool
+results, subagent transcripts, and pasted command output are removed
+or reduced to one line. That is deliberate: the audit is of the
+human's moves, and the assistant's behaviour matters only as evidence
+of what those moves caused.
+
+If the script finds nothing, the session may have run from a different
+directory or on another machine. `list --all` shows everything on this
+machine. Sessions run from git worktrees of the current checkout have
+their own slug but belong to the project; `project` mode includes
+them, `list` does not.
+
+## Auditing a whole project
+
+```
+python3 <skill-dir>/scripts/extract_session.py project [--last N] [--since YYYY-MM-DD]
+```
+
+Writes two extracts per session (full, and the human's turns only)
+and an `index.md` with a per-session stats table into a temp
+directory, prints sizes to stderr, and prints the index path. Add
+`--redact Name,Name` to replace colleagues' names. Read the index and
+the human-only files, then follow "Auditing a whole project" in
+`references/audit-rubric.md`: read every extract when there are a
+handful, fan out one subagent per session when there are many, and
+synthesise into the project report shape. The project report's value
+is recurrence: the same correction in several sessions is a standing
+instruction that was never written, and a move absent everywhere is a
+blind spot.
+
+## Retro of the current conversation
+
+No script. Read the two reference files, then apply the rubric to the
+conversation so far. You were the agent, so be as honest about where
+your own output pulled the human off course as about the human's
+turns; the rubric's last section says how.
+
+## Showing the principles
+
+Print the one-paragraph version at the end of `references/principles.md`
+first, then offer the full list. If they want the full list, give the
+sixteen move titles with their audit questions, not the whole file;
+point them at the file for the examples.
+
+## What to be careful about
+
+- **Quote or it did not happen.** A finding without the human's words
+  and a turn number is an opinion. The rubric says this; it bears
+  repeating because the temptation to summarise is strong.
+- **Coaching, not grading.** No scores. Present / partial / absent per
+  move, and then the two or three findings that cost the most, with
+  the better move as a sentence in the human's own voice.
+- **These are moves, not a checklist.** A session that made twelve of
+  sixteen moves and rebuilt an artifact twice has one finding that
+  matters, not four. Rank by cost, not by count.
+- **The lead's way is a reference, not a template.** The principles
+  file has a section of counterweights, places where the lead's own
+  habits cost something. An audit that only measures distance from the
+  lead has missed the point of the fifth principle.
+- **Do not moralise about the agent.** If the agent added ceremony,
+  guessed wrong, or ran long, the finding is what the human's
+  instructions made possible, and the fix is an instruction.
+- **If the session is one the principles quote from,** say so in the
+  report. The finding is still real; the reader just should know the
+  reference and the subject overlap.
+- **Private material stays private.** The extract may hold client
+  names, credentials pasted by accident, or other people's words. It is
+  written to the temp directory. Do not copy it into a repo, and do
+  not quote credentials or third parties in the report.
+
+## Related
+
+The planning half of this way of working, how to break down and
+sequence a large piece of work when agents build it, lives in the
+`harness` plugin's `references/agentic-planning.md`. The two are meant
+to be read together: that one shapes the plan before the session, this
+one shapes the session and reviews it after.
