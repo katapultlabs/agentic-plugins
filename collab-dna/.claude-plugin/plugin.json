@@ -1,7 +1,7 @@
 {
   "name": "collab-dna",
-  "version": "0.1.0",
-  "description": "How we build with agents, captured as sixteen auditable moves from real sessions. Audit any past Claude Code session or retro the current one: which moves were made, which were missed, what they cost, and what to write down.",
+  "version": "0.2.0",
+  "description": "How we build with agents, captured as sixteen auditable moves from real sessions. Audit any past Claude Code session, a whole project, the current conversation, or the setup that shapes them.",
   "author": {
     "name": "Katapult Labs"
   },

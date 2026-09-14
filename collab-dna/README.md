@@ -25,6 +25,13 @@ engineer can see their own sessions the way that lead would.
   whether the last session was better than the first.
 - **`/collab-dna:retro`** — the same audit of the conversation you are
   in. Good before a compaction or at the end of a long build.
+- **`/collab-dna:setup-audit`** — inventories what shapes a session
+  before you type (model, effort, permission mode, hooks, every
+  CLAUDE.md in scope, plugins, MCP servers, memory), read-only and with
+  secrets masked, and reports what forces stops, what taxes every
+  turn, and what is missing. Run it before coaching anyone whose
+  sessions look slow; an inherited setup produces the same profile as
+  bad habits.
 - **`/collab-dna:principles`** — the moves, one paragraph first, then
   the list.
 
@@ -56,16 +63,19 @@ collab-dna/
 ├── commands/
 │   ├── audit.md          /collab-dna:audit
 │   ├── retro.md          /collab-dna:retro
+│   ├── setup-audit.md    /collab-dna:setup-audit
 │   └── principles.md     /collab-dna:principles
 └── skills/collab-dna/
     ├── SKILL.md
     ├── references/
     │   ├── principles.md          the sixteen moves, with evidence and counterweights
-    │   ├── audit-rubric.md        procedure, stats signals, report shape, tone
+    │   ├── audit-rubric.md        procedure, stats signals, report shapes, tone
+    │   ├── setup-rubric.md        the six setup surfaces and the setup report shape
     │   ├── annotated-session.md   a real three-day session, human turns only, moves labelled
     │   └── handover-case.md       the case the principles came from
     └── scripts/
-        └── extract_session.py     JSONL transcript → readable markdown + stats
+        ├── extract_session.py     JSONL transcript → readable markdown + stats
+        └── inspect_setup.py       read-only setup inventory, secrets masked
 ```
 
 ## How the audit reads a session
@@ -84,6 +94,10 @@ human-only extract alongside each full one, and builds an index with
 per-session counts so the audit can find recurrence. Email addresses
 and credentials in URLs are always redacted; `--redact Name,Name`
 replaces people's names.
+
+Every session and project report opens with the model that answered
+the session and the model doing the audit, because both change what a
+finding means. `extract_session.py list` shows the model per session.
 
 The report is coaching, not grading: present / partial / absent per
 move, then the two or three findings that cost the most, quoted, with

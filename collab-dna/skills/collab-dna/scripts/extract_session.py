@@ -8,7 +8,7 @@ turns in full, the assistant's turns truncated to a preview, tool noise
 removed. The audit reads the output, not the raw JSONL.
 
 Usage:
-  extract_session.py list [--project DIR] [--all]
+  extract_session.py list [--project DIR] [--all | --worktrees]
   extract_session.py extract (latest | SESSION_ID | PATH) [--project DIR]
                              [--out FILE] [--preview N] [--stats]
                              [--human-only] [--redact NAME,NAME]
@@ -17,7 +17,8 @@ Usage:
                              [--min-turns N] [--preview N] [--redact NAME,NAME]
 
   list      Print sessions for the current project (or --all projects),
-            newest first: id, start time, user turns, size.
+            newest first: id, start time, user turns, size, the model(s)
+            that answered.
   extract   Write the markdown transcript. Prints the output path last.
             --stats prints a small JSON block of counts before the path.
   project   Extract every session of the project (git worktrees of the
@@ -128,6 +129,15 @@ def iter_records(path):
                 continue
 
 
+def session_models(path):
+    c = {}
+    for rec in iter_records(path):
+        if rec.get("type") == "assistant":
+            m = rec.get("message", {}).get("model") or "unknown"
+            c[m] = c.get(m, 0) + 1
+    return ", ".join(sorted(c, key=lambda k: -c[k])) or "unknown"
+
+
 def session_summary(path):
     n = 0
     first = last = None
@@ -147,8 +157,11 @@ def session_summary(path):
     return n, first, last
 
 
-def list_sessions(project_dir, all_projects):
-    dirs = [os.path.join(PROJECTS, d) for d in os.listdir(PROJECTS)] if all_projects else [os.path.join(PROJECTS, slug_for(project_dir))]
+def list_sessions(project_dir, all_projects, worktrees=False):
+    if all_projects:
+        dirs = [os.path.join(PROJECTS, d) for d in os.listdir(PROJECTS)]
+    else:
+        dirs = project_dirs(project_dir, worktrees)
     rows = []
     for d in dirs:
         if not os.path.isdir(d):
@@ -157,13 +170,13 @@ def list_sessions(project_dir, all_projects):
             n, first, last = session_summary(p)
             if n == 0:
                 continue
-            rows.append((os.path.getmtime(p), os.path.basename(d), os.path.basename(p)[:-6], n, first, os.path.getsize(p)))
+            rows.append((os.path.getmtime(p), os.path.basename(d), os.path.basename(p)[:-6], n, first, os.path.getsize(p), session_models(p)))
     rows.sort(reverse=True)
     if not rows:
         print("no sessions found", file=sys.stderr)
         return 1
-    for _, proj, sid, n, first, size in rows:
-        print(f"{sid}  {first[:16] if first else '?':16}  {n:4d} turns  {size/1e6:6.1f} MB  {proj}")
+    for _, proj, sid, n, first, size, models in rows:
+        print(f"{sid}  {first[:16] if first else '?':16}  {n:4d} turns  {size/1e6:6.1f} MB  {models:28}  {proj}")
     return 0
 
 
@@ -186,7 +199,8 @@ def resolve(target, project_dir):
 def extract(path, out, preview, want_stats, human_only=False, names=()):
     stats = {"user_turns": 0, "user_words": 0, "assistant_turns": 0, "assistant_words": 0,
              "commands_run_by_user": 0, "slash_commands": 0, "subagent_notifications": 0,
-             "compactions": 0, "questions_asked_by_user": 0, "first": None, "last": None}
+             "compactions": 0, "questions_asked_by_user": 0, "first": None, "last": None,
+             "models": {}}
     # user_turns / user_words count only what the human typed; slash commands,
     # skill bodies and other injected records (isMeta) are listed but not counted.
     lines = [f"# Session {os.path.basename(path)[:-6]}", "", f"Source: `{path}`", "",
@@ -255,6 +269,8 @@ def extract(path, out, preview, want_stats, human_only=False, names=()):
             if not txt:
                 continue
             stats["assistant_turns"] += 1
+            model = msg.get("model") or "unknown"
+            stats["models"][model] = stats["models"].get(model, 0) + 1
             words = len(txt.split())
             stats["assistant_words"] += words
             if human_only:
@@ -270,6 +286,8 @@ def extract(path, out, preview, want_stats, human_only=False, names=()):
             lines.append(f"\n> ASSISTANT [{ts[11:16]}] ({words} words)\n> " + short.replace("\n", "\n> "))
     if session_first and session_last:
         stats["span_hours"] = round((_dt(session_last) - _dt(session_first)).total_seconds() / 3600, 1)
+    models = ", ".join(f"{m} ({n} turns)" for m, n in sorted(stats["models"].items(), key=lambda x: -x[1]))
+    lines.insert(3, f"Assistant model: {models or 'unknown'}. Subagents' models are not visible here.")
     with open(out, "w") as f:
         f.write("\n".join(lines) + "\n")
     if want_stats:
@@ -323,14 +341,15 @@ def project(project_dir, out_dir, last, since, worktrees, min_turns, preview, na
              "`human` has only the human's turns (read that first, it is much smaller). "
              "Typed turns and words exclude injected content, command output, and re-sent messages. "
              "Sessions with fewer than five typed turns are too short to score; say so rather than scoring them.", "",
-             "| Session | Start | Worktree | Typed turns | Typed words | Questions | Commands run | Subagent notifications | Compactions | Span h | Size |",
-             "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |"]
+             "| Session | Start | Worktree | Model | Typed turns | Typed words | Questions | Commands run | Subagent notifications | Compactions | Span h | Size |",
+             "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |"]
     for sid, start, wt, st, size in rows:
-        lines.append(f"| {sid[:8]} [full]({sid}.md) [human]({sid}.human.md) | {start} | {wt} | {st['user_turns']} | {st['user_words']} | "
+        models = ", ".join(sorted(st["models"], key=lambda k: -st["models"][k])) or "unknown"
+        lines.append(f"| {sid[:8]} [full]({sid}.md) [human]({sid}.human.md) | {start} | {wt} | {models} | {st['user_turns']} | {st['user_words']} | "
                      f"{st['questions_asked_by_user']} | {st['commands_run_by_user']} | {st['subagent_notifications']} | "
                      f"{st['compactions']} | {st.get('span_hours', 0)} | {size // 1024} KB |")
         print(f"{sid[:8]}  {start}  {st['user_turns']:4d} typed turns  {size // 1024:5d} KB full", file=sys.stderr)
-    lines.append(f"| **total** | | | {totals['user_turns']} | {totals['user_words']} | {totals['questions_asked_by_user']} | "
+    lines.append(f"| **total** | | | | {totals['user_turns']} | {totals['user_words']} | {totals['questions_asked_by_user']} | "
                  f"{totals['commands_run_by_user']} | {totals['subagent_notifications']} | {totals['compactions']} | "
                  f"{round(totals['span_hours'], 1)} | |")
     print(f"{len(rows)} sessions extracted to {out_dir}", file=sys.stderr)
@@ -346,6 +365,7 @@ def main():
     l = sub.add_parser("list")
     l.add_argument("--project", default=os.getcwd())
     l.add_argument("--all", action="store_true")
+    l.add_argument("--worktrees", action="store_true", help="include sessions run from git worktrees of this checkout")
     e = sub.add_parser("extract")
     e.add_argument("target")
     e.add_argument("--project", default=os.getcwd())
@@ -365,7 +385,7 @@ def main():
     pj.add_argument("--preview", type=int, default=400)
     a = ap.parse_args()
     if a.cmd == "list":
-        sys.exit(list_sessions(a.project, a.all))
+        sys.exit(list_sessions(a.project, a.all, a.worktrees))
     if a.cmd == "project":
         out = a.out or os.path.join(os.environ.get("TMPDIR", "/tmp"),
                                     "collab-dna-" + os.path.basename(os.path.abspath(a.project)))

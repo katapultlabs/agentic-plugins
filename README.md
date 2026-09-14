@@ -34,7 +34,7 @@ Go to the **Discover** tab to see all plugins from this marketplace, or install 
 | [engineering-harness](./engineering-harness) | Environment preflight, repo scaffolding, and workflow enforcement for human+agent collaboration |
 | [apple-harness](./apple-harness) | Build, test, and run native Apple platform apps (iOS, macOS) with agent-isolated builds and strict Swift 6 defaults |
 | [brand-dna](./brand-dna) | Capture a brand's identity from any URL into DTCG design tokens, DESIGN.md, BRAND_VOICE.md, and an auto-applying project skill |
-| [collab-dna](./collab-dna) | How we build with agents, captured as sixteen auditable moves; audit any past Claude Code session or retro the current one |
+| [collab-dna](./collab-dna) | How we build with agents, captured as sixteen auditable moves; audit any past Claude Code session, a whole project, the current conversation, or the setup that shapes them |
 
 ## Using a plugin
 

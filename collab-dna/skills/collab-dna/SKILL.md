@@ -1,6 +1,6 @@
 ---
 name: collab-dna
-description: "How we build with agents, captured as auditable moves. Use this whenever someone wants to get better at working with Claude Code or any coding agent: 'audit my session', 'review how I worked with you', 'retro on this conversation', 'how could I have driven this better', 'what should I improve in how I prompt', 'grade my collaboration', 'look at my last session', 'why did this take so many turns', 'am I using you well', 'show me the principles', 'how does our lead work with Claude'. Also use it when a session has just ended badly (rebuilt artifacts, many corrections, wrong direction held too long) and the human asks what went wrong, even if they do not say 'audit'. Do not use it for code review; it reviews the human's moves, not the code."
+description: "How we build with agents, captured as auditable moves. Use this whenever someone wants to get better at working with Claude Code or any coding agent: 'audit my session', 'review how I worked with you', 'retro on this conversation', 'how could I have driven this better', 'what should I improve in how I prompt', 'grade my collaboration', 'look at my last session', 'why did this take so many turns', 'am I using you well', 'show me the principles', 'how does our lead work with Claude', 'audit my setup', 'check my CLAUDE.md', 'is my harness slowing me down', 'why does Claude keep stopping to ask me', 'what plugins and rules am I carrying'. Also use it when a session has just ended badly (rebuilt artifacts, many corrections, wrong direction held too long) and the human asks what went wrong, even if they do not say 'audit'. Do not use it for code review; it reviews the human's moves, not the code."
 version: 0.1.0
 allowed-tools: Bash, Read, Glob, Grep
 ---
@@ -23,7 +23,13 @@ Three things this skill does:
    several sessions, moves never made, drift over time.
 2. **Retro the current conversation.** Same audit, no extraction; the
    transcript is already in context and you were the agent.
-3. **Show the principles.** The sixteen moves with their reasons, for
+3. **Audit the setup.** Inventory everything that shapes a session
+   before the human types (model, effort, permission mode, hooks, every
+   CLAUDE.md in scope, plugins, MCP servers, memory) and report what
+   forces stops, what taxes context, and what is missing. Do this
+   before coaching a person whose sessions look slow: an inherited
+   setup produces the same profile as bad habits.
+4. **Show the principles.** The sixteen moves with their reasons, for
    reading before a session rather than after.
 
 ## Files
@@ -34,6 +40,8 @@ Three things this skill does:
 | `references/audit-rubric.md` | The procedure, what the stats block signals, the fixed report shape, and the tone | Before writing any audit report |
 | `references/annotated-session.md` | A real three-day session, the human's turns only, each labelled with its move | When the human asks what a strong session looks like, or when you need a reference for a move you are about to call absent |
 | `references/handover-case.md` | The case the principles came from: a handover that drifted into a port while every gate passed | When the audit touches legacy work, plan shape, or "fast but wrong direction" |
+| `references/setup-rubric.md` | The six setup surfaces, what a bad one looks like on each, the edit, and the setup report shape | Before any setup audit |
+| `scripts/inspect_setup.py` | Read-only inventory of the setup surfaces, secrets masked, plus the model behind each recent session | For any setup audit |
 | `scripts/extract_session.py` | Turns a Claude Code JSONL transcript into readable markdown plus a stats block; `project` mode does every session of the project into a directory with an index | For any audit of a past session or a project |
 
 ## Auditing a past session
@@ -90,6 +98,19 @@ is recurrence: the same correction in several sessions is a standing
 instruction that was never written, and a move absent everywhere is a
 blind spot.
 
+## Auditing the setup
+
+```
+python3 <skill-dir>/scripts/inspect_setup.py --out <temp file>
+```
+
+Read the inventory, then `references/setup-rubric.md`, and produce the
+setup report. Change nothing; the human applies it. When a session
+audit already exists for the project, its repeated corrections and
+absent moves are the test cases: each should have a durable home in
+the setup (a rule, a hook, a permission, a memory) or the report says
+it does not.
+
 ## Retro of the current conversation
 
 No script. Read the two reference files, then apply the rubric to the
@@ -106,6 +127,10 @@ point them at the file for the examples.
 
 ## What to be careful about
 
+- **State the models.** Both audit shapes open with the model that
+  answered the session and the model doing the audit. A small model on
+  either side changes what the findings mean; the reader has to be
+  able to discount.
 - **Quote or it did not happen.** A finding without the human's words
   and a turn number is an opinion. The rubric says this; it bears
   repeating because the temptation to summarise is strong.

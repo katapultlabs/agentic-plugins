@@ -62,6 +62,18 @@ Three things make an audit useful and each is easy to skip:
    move done well is the reference for doing it again, and because the
    human needs to know which instincts to keep.
 
+## The model lines
+
+Both report shapes open with two model lines, and they are not
+decoration. A session run on a small model produces more corrections,
+more stops, and more ceremony than the same human would produce on a
+large one, and an audit run on a small model misses moves. The reader
+of a report, often not the person who ran it, has to be able to
+discount both. The extract header names the model that answered every
+assistant turn (subagents' models are not visible). Your own model id
+is in your system prompt; state it, and if the model that ran the
+session was smaller than the one auditing, say so in the arc.
+
 ## Signals in the stats block
 
 `extract_session.py --stats` prints counts. They are not a score; they
@@ -101,6 +113,8 @@ Use this shape. Headings are fixed; keep each section short.
 # Session audit: <session id or "this conversation">
 
 <one-line facts: date, span, human turns, what was built>
+Session ran on: <model(s) from the extract header>. Audited with: <your
+own model id, from your system prompt; "unknown" if you cannot tell>.
 
 ## The arc
 <one paragraph>
@@ -195,6 +209,8 @@ Report shape for a project:
 
 <one-line facts: sessions, date range, typed turns, typed words,
 total span>
+Sessions ran on: <models from the index>. Audited with: <your own
+model id; "unknown" if you cannot tell>.
 
 ## What the sessions were
 <one line per session: date, what it was for, how it went; from the
