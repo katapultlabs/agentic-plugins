@@ -158,6 +158,16 @@ CLAUDE.md, a memory, or a doc, with the exact wording proposed>
 <three lines, imperative, specific to this human's pattern>
 ```
 
+## Dictation
+
+Many people dictate to the agent and only type when it is faster. Long
+unpunctuated turns, homophone errors ("police" for "please"), a
+message sent twice, and spoken tics are transcription artifacts, not
+habits, and they are never a finding on their own. Read intent through
+them. The finding, when there is one, is a high-stakes dictated turn
+that was acted on without a read-back (move 13). Quote such turns as
+they are, and say the error did not matter when it did not.
+
 ## Tone
 
 Direct, specific, no hedging, no praise inflation. Quote the person

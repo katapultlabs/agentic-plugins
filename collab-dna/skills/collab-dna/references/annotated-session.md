@@ -2,8 +2,9 @@
 
 The human's turns from the session in which the lead reviewed a
 handed-over build, took it back, and shipped it to staging. Client and
-people names are removed; the words are otherwise verbatim, including
-dictation. Each turn carries the move it makes (numbers refer to
+people names are removed; the words are otherwise verbatim. The lead dictates
+nearly everything, so read the run-ons and the odd homophone as
+speech, not as writing. Each turn carries the move it makes (numbers refer to
 `principles.md`). Task notifications, pasted command output, and the
 agent's replies are omitted; where a reply matters, it is summarised in
 brackets.

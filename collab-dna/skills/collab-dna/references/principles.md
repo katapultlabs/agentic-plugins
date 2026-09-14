@@ -394,10 +394,12 @@ The same transcripts show where the lead's own way of working cost
 something. An honest audit reports these too, because they are the part
 a strong collaborator can still improve.
 
-- **Dictation run-ons at the highest-stakes moments.** The most
-  important corrections were the least parseable turns: two paragraphs,
-  no punctuation, "Does that make sense?" twice. They worked because of
-  the read-back, which was needed *because* of the phrasing.
+- **Dictated corrections without a read-back.** The lead dictates
+  nearly everything, so the most important corrections arrive as long
+  spoken paragraphs with transcription errors and "Does that make
+  sense?" as a tic. That is a mode, not a flaw. The cost appears only
+  when a high-stakes dictated turn is acted on without being said
+  back; the read-back (move 13) is what makes dictation safe.
 - **The audience arrives late.** "The team" was named in turn one; "for
   a non-technical reader" arrived two published versions later.
 - **Corrections that lived in the lead's head.** Push rights, the
