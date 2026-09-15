@@ -11,6 +11,11 @@ humans and agents collaborate as peers — with Linear as the workflow backbone.
   docs with PRD, ADR, and RFC templates, agent-guides, and .claude/ dirs
 - **Workflow enforcement** — duplicate checking before filing issues, sprint
   priority surfacing, automatic status updates, and audit-trail comments
+- **Planning guidance** — how to break down, sequence, and parallelize big
+  work when agents build it. No time estimates, dependency-and-risk ordering,
+  batches with exit gates, fan-out limits. Full guide in
+  [`skills/harness/references/agentic-planning.md`](./skills/harness/references/agentic-planning.md),
+  plus a CLAUDE.md append block that `/harness:setup` offers to install
 
 ## Components
 
