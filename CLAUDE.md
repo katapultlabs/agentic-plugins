@@ -34,5 +34,5 @@ This is a Claude Code plugin marketplace repository. It hosts plugins that anyon
 - Plugin names use kebab-case
 - One plugin per top-level directory
 - Skills must have descriptive activation triggers in their `description` field
-- No executable code — plugins are instruction-only
+- Plugins are instruction-first. A skill may ship scripts under `skills/<name>/scripts/` when deterministic work needs them (inventories, transcript extracts, stale-reference scans); scripts are read-only by default, mask secrets, and are documented in the plugin README
 - Follow semantic versioning
