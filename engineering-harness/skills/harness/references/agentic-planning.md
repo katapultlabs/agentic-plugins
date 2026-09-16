@@ -24,7 +24,10 @@ agent is finite, shared state is dangerous, and human attention is the one
 thing you can't parallelize.
 
 So the plan has to be rebuilt around the new constraints, not just
-compressed.
+compressed. That includes the order of work. Waterfall phases, team
+handoffs, and the integration passes between them were answers to
+staffing constraints, not properties of the work. Re-derive the sequence
+from dependencies and shared state alone.
 
 ## The rules
 

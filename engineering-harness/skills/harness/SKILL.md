@@ -80,7 +80,7 @@ as-is. Either way, check for and offer to append the workflow rules.
    (see Part 3)? If missing, offer to append from
    `references/claude-md-rules.md` (Block 2).
 6. **Planning and estimation** — does it say plans carry no time
-   estimates and default to parallel execution? If missing, offer to
+   estimates and close batches on gates? If missing, offer to
    append from `references/claude-md-rules.md` (Block 3). The full
    reasoning, procedure, and planning prompt live in
    `references/agentic-planning.md`; point collaborators there when

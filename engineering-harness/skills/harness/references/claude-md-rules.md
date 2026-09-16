@@ -96,8 +96,11 @@ assigned to "the entire feature."
 ## Planning and Estimation
 
 Plans assume agentic execution. Work lands in a fraction of pre-AI time,
-so calendar estimates are noise. These rules apply to every plan an
-agent writes or a human asks for.
+so calendar estimates are noise. The sequence changes too: phases,
+handoffs, and integration steps that existed because separate teams
+built serially are not givens. Derive the order from dependencies and
+shared state, not from how the work used to be staffed. These rules
+apply to every plan an agent writes or a human asks for.
 
 ### No time estimates
 Never include duration, effort, sprint, or delivery estimates. Describe
@@ -107,18 +110,13 @@ once and answer only if the user confirms.
 ### Sequence by dependency and risk
 Order units only by what must exist first. Risk creates a review gate,
 not an ordering. Collapse work into as few batches as the dependency
-graph allows.
-
-### Parallel by default
-Serialize only work that shares state: overlapping files, migrations,
-the shared local database, production data, irreversible operations.
-Name the shared state that forces it. Everything else runs at once, one
-agent per git worktree, orchestrator merges. 3+ independent units means
-parallel agents; 5–10 is the band; past ~12 gains evaporate.
+graph allows. Serialize only work that shares state: overlapping files,
+migrations, the shared local database, production data, irreversible
+operations. Name the shared state that forces it.
 
 ### Foundation first
 Schema, shared types, contracts, and tokens land and build alone. Then
-fan out everything that consumes them.
+everything that consumes them can proceed.
 
 ### Size units by spec, not time
 One agent, one unit it can hold whole. Roughly 150 lines of spec is the
@@ -131,9 +129,9 @@ it passes. A batch is a commit boundary. Progress is gates passed.
 Before a refactor, write behavioral tests against current behavior and
 keep them green.
 
-### Spend human attention carefully
-Few, batched review gates over many check-ins. Take work as far as it
-can go before asking. Human review is for taste, product judgment, and
-the risky tier (migrations, auth, money, deploy config, prod-path deps),
-not for confirming the software runs.
+### The risky tier gets human eyes
+Migrations, auth, money, deploy config, and prod-path dependencies need
+a human diff read before landing. Everything else lands on its gate.
+Human review is for taste and product judgment, not for confirming the
+software runs.
 ```
