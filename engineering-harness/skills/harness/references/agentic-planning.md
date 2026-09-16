@@ -45,19 +45,22 @@ If an agent hands you a plan with days or weeks in it, send it back.
 For each unit of work ask two questions. What must exist before this can
 start? What breaks if this is wrong?
 
-Only the first question creates ordering. The second creates a review
-gate. Don't confuse them: "risky" means a human reads the diff before it
-lands, it doesn't mean it has to wait its turn.
+Risk alone creates a review gate, not ordering. But an unanswered question
+that could change a shared schema, interface, or authorization model is a
+dependency: resolve it before its consumers start. Use the smallest source
+check or experiment that settles it. Unrelated work can continue.
 
 ### 3. Default to parallel. Serialize only what shares state.
 
 Overlapping files, database migrations, the shared local database,
-production data, anything irreversible: one task at a time. Everything
-else fans out.
+production data, anything irreversible: one task at a time. Other units
+are eligible for parallel execution, subject to rule 7.
 
 Serializing is a finding about the specific work ("these two both edit
-the auth middleware"), never a default posture. If you can't name the
-shared state, it isn't there.
+the auth middleware"), never a default posture. Before parallel writes,
+name each unit's write targets and verify isolation or exclusive ownership.
+Unknown sharing is a dependency to resolve. Separate state where practical;
+serialize what must remain shared.
 
 ### 4. Collapse phases into batches with exit gates.
 
@@ -67,8 +70,11 @@ at once, and it closes when its exit gate passes: verify green, behavioral
 tests pass, a grep for the stale pattern comes back empty, a screenshot of
 the flow exists.
 
-A batch is a commit boundary, not a calendar boundary. Rollback
-granularity is the commit.
+A batch is a commit boundary, not a calendar boundary. The commit is the
+source-code rollback unit. For data changes and external effects, name
+the recovery action and stop condition in the existing
+[rollout plan](templates/rfc-template.md). Check what already
+happened before retrying interrupted work; recovery may be a forward fix.
 
 Tests are cheap now. Before a refactor, have the agent write behavioral
 tests against current behavior and keep them green through the change.
@@ -81,11 +87,11 @@ and nail it. When an agent gets "build the entire features section," it
 glosses over details. When it gets one focused component with exact
 values, it gets it right.
 
-### 6. Foundation first, then everything at once.
+### 6. Foundation first, then dependent units.
 
 Some things are genuinely sequential because everything else consumes
 them: the schema, shared types, design tokens, an API contract. Build
-those alone, verify, then fan out every unit that depends on them.
+those alone, verify, then let dependent units proceed under rule 7.
 
 The common shape is db → api → web. Schema and query exports land and
 build first. Routes and screens then run in parallel against the built
@@ -110,6 +116,9 @@ Isolation is the harness's job now. Each agent gets its own git worktree
 and branch, and the orchestrator merges at the end with full context of
 what everyone was asked to do. Confirm it is on; don't build it by hand.
 Two agents on one branch is how work gets silently overwritten.
+
+Worktrees isolate files, not databases, ports, build output, or accounts.
+Check those write targets under rule 3 before dispatching workers.
 
 ### 8. Measure progress in gates passed.
 
@@ -142,12 +151,15 @@ who needs context, not a junior who needs instructions.
    humans.
 2. **Ask the agent for a dependency graph.** Use the prompt below. Forbid
    time estimates in the ask.
-3. **Find the foundation.** Whatever everything else depends on is batch
-   0. It runs alone.
-4. **Find the shared state.** Migrations, prod data, the same file edited
-   twice. Those units serialize. Name the state that forces it.
-5. **Everything else is one parallel batch.** Cap each unit at what one
-   agent can hold. Split until it fits.
+3. **Find the foundation.** Resolve unknowns that could change shared
+   contracts before their consumers start. Whatever everything else
+   depends on is batch 0. It runs alone.
+4. **Check write targets.** Verify isolation or exclusive ownership,
+   including resources outside worktrees. Separate state where practical;
+   name what still forces serialization.
+5. **Group eligible units.** Use as few parallel batches as dependencies
+   allow, subject to rule 7's opt-in and context-cost conditions. Cap each
+   unit at what one agent can hold. Split until it fits.
 6. **Write the exit gate for each batch.** Concrete and checkable.
 7. **Run it.** One worktree per agent, which the harness provides,
    orchestrator merges, gate, next batch.
@@ -163,16 +175,22 @@ Outcome: <what should be true when this is done>
 Non-goals: <what we are explicitly not doing>
 
 Produce:
-1. The dependency graph: which units must exist before which others.
+1. The dependency graph: which units must exist before which others,
+   including unknowns that could change a shared contract.
 2. Batch 0: the foundation everything else consumes (schema, types,
    contracts, tokens). Keep it as small as possible.
-3. The units that must serialize, and the specific shared state
-   (file, table, dataset) that forces each one.
-4. Every remaining unit, grouped into as few parallel batches as the
-   dependency graph allows. Size each unit so one agent can hold the
-   whole spec; split anything bigger.
+3. Each unit's write targets, evidence of isolation or exclusive ownership,
+   and any shared state that still forces serialization. Include resources
+   outside worktrees; resolve unknown sharing before parallel writes.
+4. Eligible units grouped into as few parallel batches as dependencies
+   allow. Delegation requires user opt-in and units that warrant separate
+   contexts; small units can stay inline. Size each unit so one agent can
+   hold the whole spec; split anything bigger.
 5. A concrete exit gate per batch (commands, tests, greps, screenshots).
 6. The risky-tier units that need a human diff read before landing.
+
+For stateful batches, name the recovery action and stop condition in the
+rollout plan. A Git revert does not undo data changes or external effects.
 
 Then recommend which batch to start with and what you'd run in parallel.
 ```
@@ -182,7 +200,8 @@ Then recommend which batch to start with and what you'd run in parallel.
 "Add invite-only onboarding." The human-paced plan had 4 milestones over
 3 weeks.
 
-The agentic plan:
+The agentic plan, assuming multi-agent work is authorized, the shared
+contracts are settled, and these units warrant separate contexts:
 
 - **Batch 0** (serial, 1 agent): invite table, migration, shared types,
   query exports. Gate: package builds, migration applies clean locally.

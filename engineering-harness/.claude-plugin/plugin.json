@@ -1,6 +1,6 @@
 {
   "name": "harness",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Opinionated environment preflight, repo scaffolding, and workflow enforcement for teams where humans and agents collaborate as peers. Checks MCPs and plugins, scaffolds docs structure (PRDs, ADRs, RFCs), enforces Linear-backed workflow rules, and teaches agentic planning: no time estimates, parallel by default, batches with exit gates.",
   "author": {
     "name": "Katapult"

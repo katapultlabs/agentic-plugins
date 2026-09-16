@@ -17,7 +17,7 @@ description: >
   "what can run in parallel", "give me a roadmap", "estimate this".
   Use this skill liberally — if someone is asking about onboarding,
   project setup, or workflow hygiene, this is the skill to use.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Harness
@@ -303,7 +303,11 @@ isn't the highest-leverage thing to do right now.
 ### Rule 3: Update Issue Status on Start and Complete
 
 - When starting work on an issue → move it to "In Progress"
-- When done (PR opened, tests passing) → move it to "Done"
+- Before moving to "Done", verify the issue's agreed acceptance criteria
+  and the team's review/merge requirements, following `/harness:complete-task`.
+  An open PR or passing tests alone is not enough. If a required check
+  failed, was skipped, or is unverified, record the evidence and blocker
+  and leave the issue in an appropriate non-complete state.
 
 This is how the team avoids collisions. An agent picking up work
 can see what's already in flight, and a human checking Linear at
@@ -314,6 +318,7 @@ standup sees accurate status without asking anyone.
 After completing work on an issue, post a comment summarizing:
 - What was done (files changed, approach taken)
 - PR link if applicable
+- Acceptance results and supporting evidence
 - Any follow-up issues created (after running the duplicate check)
 
 This creates the audit trail that makes async, mixed human+agent
