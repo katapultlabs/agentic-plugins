@@ -10,9 +10,11 @@ Do not overwrite any existing content.
    "Automatic Behaviors" or "When building" / "When something breaks"
 2. **Workflow Rules** — look for "Workflow Rules" or "Linear" or
    "Before Creating Issues"
+3. **Planning and Estimation** — look for "Planning and Estimation" or
+   "estimates" or "Serialize" / "parallel"
 
-If both are missing, append the Automatic Behaviors block first (it's
-the foundation), then the Workflow Rules block.
+If all are missing, append the Automatic Behaviors block first (it's
+the foundation), then the Workflow Rules block, then the Planning block.
 
 ---
 
@@ -80,4 +82,56 @@ is being handled.
    taken, and a link to the PR if applicable
 3. If new follow-up work was discovered, create a new issue (after
    checking for duplicates) and link it to the completed one
+```
+
+---
+
+## Block 3: Planning and Estimation
+
+The condensed form of `references/agentic-planning.md`. Append this when
+the repo's plans keep coming back with weeks in them or with one agent
+assigned to "the entire feature."
+
+```markdown
+## Planning and Estimation
+
+Plans assume agentic execution. Work lands in a fraction of pre-AI time,
+so calendar estimates are noise. The sequence changes too: phases,
+handoffs, and integration steps that existed because separate teams
+built serially are not givens. Derive the order from dependencies and
+shared state, not from how the work used to be staffed. These rules
+apply to every plan an agent writes or a human asks for.
+
+### No time estimates
+Never include duration, effort, sprint, or delivery estimates. Describe
+sequence and dependencies instead. If asked for an estimate, push back
+once and answer only if the user confirms.
+
+### Sequence by dependency and risk
+Order units only by what must exist first. Risk creates a review gate,
+not an ordering. Collapse work into as few batches as the dependency
+graph allows. Serialize only work that shares state: overlapping files,
+migrations, the shared local database, production data, irreversible
+operations. Name the shared state that forces it.
+
+### Foundation first
+Schema, shared types, contracts, and tokens land and build alone. Then
+everything that consumes them can proceed.
+
+### Size units by spec, not time
+One agent, one unit it can hold whole. Roughly 150 lines of spec is the
+ceiling; past that, split. "It's all related" is not an override.
+
+### Batches close on gates
+Every batch has a concrete exit gate (verify green, behavioral tests,
+greps for stale patterns, screenshots of the flow) and closes only when
+it passes. A batch is a commit boundary. Progress is gates passed.
+Before a refactor, write behavioral tests against current behavior and
+keep them green.
+
+### The risky tier gets human eyes
+Migrations, auth, money, deploy config, and prod-path dependencies need
+a human diff read before landing. Everything else lands on its gate.
+Human review is for taste and product judgment, not for confirming the
+software runs.
 ```
