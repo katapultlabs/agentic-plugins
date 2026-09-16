@@ -142,6 +142,12 @@ in context every turn. Read every one in the inventory.
 - **Length.** A global file over about a hundred lines, or a project
   file that is an encyclopedia rather than a router, is a tax on every
   turn and dilutes the rules that matter. Say what to move to `docs/`.
+- **Rules the harness now does unaided, or now fights.** "Take work
+  as far as you can before asking" when the harness runs autonomously;
+  "delegate freely" when the harness says spawn rarely; a manual
+  worktree rule when isolation is built in. These are the prune pass's
+  job: note them here, then run `supersession-rubric.md` for the
+  evidence standard and the one-at-a-time report.
 - **Rules that restate what the doctrine already says, badly.** A
   half-remembered "no time estimates" that still lets sprints through.
   Point at the harness planning block or the collab-dna principles.
@@ -209,6 +215,11 @@ project does not use; each with the edit>
 ## What is missing
 <standing directives, hooks, memory, or plugins the doctrine assumes
 and the setup lacks; each with the exact text or command>
+
+## What is superseded
+<rules the harness now does unaided or now contradicts; one line each
+pointing at the prune pass for the evidence and the patch, or the
+prune report itself if it was run>
 
 ## What the model lines say
 <which model answered the recent sessions, whether it matches the

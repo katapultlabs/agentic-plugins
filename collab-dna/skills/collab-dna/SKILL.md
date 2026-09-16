@@ -1,7 +1,7 @@
 ---
 name: collab-dna
-description: "How we build with agents, captured as auditable moves. Use this whenever someone wants to get better at working with Claude Code or any coding agent: 'audit my session', 'review how I worked with you', 'retro on this conversation', 'how could I have driven this better', 'what should I improve in how I prompt', 'grade my collaboration', 'look at my last session', 'why did this take so many turns', 'am I using you well', 'show me the principles', 'how does our lead work with Claude', 'audit my setup', 'check my CLAUDE.md', 'is my harness slowing me down', 'why does Claude keep stopping to ask me', 'what plugins and rules am I carrying'. Also use it when a session has just ended badly (rebuilt artifacts, many corrections, wrong direction held too long) and the human asks what went wrong, even if they do not say 'audit'. Do not use it for code review; it reviews the human's moves, not the code."
-version: 0.1.0
+description: "How we build with agents, captured as auditable moves. Use this whenever someone wants to get better at working with Claude Code or any coding agent: 'audit my session', 'review how I worked with you', 'retro on this conversation', 'how could I have driven this better', 'what should I improve in how I prompt', 'grade my collaboration', 'look at my last session', 'why did this take so many turns', 'am I using you well', 'show me the principles', 'how does our lead work with Claude', 'audit my setup', 'check my CLAUDE.md', 'is my harness slowing me down', 'why does Claude keep stopping to ask me', 'what plugins and rules am I carrying', 'prune my CLAUDE.md', 'which of my rules are outdated', 'what here is cruft', 'clean up my memory files', 'we upgraded models, what should change in my setup'. Also use it when a session has just ended badly (rebuilt artifacts, many corrections, wrong direction held too long) and the human asks what went wrong, even if they do not say 'audit'. Do not use it for code review; it reviews the human's moves, not the code."
+version: 0.3.0
 allowed-tools: Bash, Read, Glob, Grep
 ---
 
@@ -13,7 +13,7 @@ any transcript. The purpose is to help an engineer see their own
 sessions the way that lead would, and to hand them the specific
 sentence they could have typed instead.
 
-Three things this skill does:
+What this skill does:
 
 1. **Audit a past session, or a whole project.** Extract a local
    Claude Code transcript (or every transcript for the current
@@ -29,7 +29,13 @@ Three things this skill does:
    forces stops, what taxes context, and what is missing. Do this
    before coaching a person whose sessions look slow: an inherited
    setup produces the same profile as bad habits.
-4. **Show the principles.** The sixteen moves with their reasons, for
+4. **Prune the rules.** Find standing rules in every CLAUDE.md, rules
+   file, and memory entry that the current harness or model has
+   superseded, and propose their removal or rewrite one decision at a
+   time. Rules are written against a model and a harness; both move
+   and the rules stay. Run it after a setup audit, or whenever the
+   model or harness has changed.
+5. **Show the principles.** The sixteen moves with their reasons, for
    reading before a session rather than after.
 
 ## Files
@@ -38,6 +44,8 @@ Three things this skill does:
 | --- | --- | --- |
 | `references/principles.md` | The sixteen moves, each with a verbatim example, the reason it matters, and its audit question; the counterweights; a one-paragraph version | Always, before any audit or retro |
 | `references/audit-rubric.md` | The procedure, what the stats block signals, the fixed report shape, and the tone | Before writing any audit report |
+| `references/supersession-rubric.md` | The prune pass: five buckets, three questions, the evidence standard, the auditor's conflict of interest, the report shape | Before any prune pass |
+| `references/superseded-patterns.md` | Rule shapes others found superseded, each dated with what superseded it and how to verify; leads, not verdicts | During a prune pass |
 | `references/annotated-session.md` | A real three-day session, the human's turns only, each labelled with its move | When the human asks what a strong session looks like, or when you need a reference for a move you are about to call absent |
 | `references/handover-case.md` | The case the principles came from: a handover that drifted into a port while every gate passed | When the audit touches legacy work, plan shape, or "fast but wrong direction" |
 | `references/setup-rubric.md` | The six setup surfaces, what a bad one looks like on each, the edit, and the setup report shape | Before any setup audit |
@@ -111,6 +119,23 @@ absent moves are the test cases: each should have a durable home in
 the setup (a rule, a hook, a permission, a memory) or the report says
 it does not.
 
+## Pruning superseded rules
+
+```
+python3 <skill-dir>/scripts/inspect_setup.py --out <temp file>
+python3 <skill-dir>/scripts/find_stale.py --out <temp file>
+```
+
+Read both, then `references/supersession-rubric.md` and
+`references/superseded-patterns.md`, and produce the prune report.
+The inventory is every rule in scope; the stale scan is the
+deterministic half (missing paths, old lines, state claims, memory
+drift, what changed since the last pass). The judgment about which
+rules are superseded is yours, made against the harness you are
+running in, with its guidance quoted as evidence. Change nothing; hand
+the human patches one item at a time, and never edit the global
+CLAUDE.md yourself. Stamp the pass afterwards with `--stamp`.
+
 ## Retro of the current conversation
 
 No script. Read the two reference files, then apply the rubric to the
@@ -150,6 +175,12 @@ point them at the file for the examples.
 - **If the session is one the principles quote from,** say so in the
   report. The finding is still real; the reader just should know the
   reference and the subject overlap.
+- **The prune pass audits the rules that constrain you.** You will
+  lean toward calling them superseded. The rubric's third question,
+  what happens if the rule is removed, is mandatory for every proposed
+  deletion, and the human approves each one. A rule that looks like a
+  workaround may be a preference; the counterweights section says how
+  to tell.
 - **Private material stays private.** The extract may hold client
   names, credentials pasted by accident, or other people's words. It is
   written to the temp directory. Do not copy it into a repo, and do

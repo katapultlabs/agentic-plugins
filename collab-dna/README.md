@@ -32,6 +32,17 @@ engineer can see their own sessions the way that lead would.
   turn, and what is missing. Run it before coaching anyone whose
   sessions look slow; an inherited setup produces the same profile as
   bad habits.
+- **`/collab-dna:prune`** — finds the standing rules in every CLAUDE.md,
+  rules file, and memory entry that the current harness or model has
+  superseded: rules that now fight the harness, rules it does unaided,
+  facts that stopped being true, history and TODOs living in fact
+  files. Every rule was written against a model and a harness; both
+  move and the rules stay. The report ranks by cost, gives the exact
+  replacement text, and the human approves one item at a time; nothing
+  is applied by the agent. Run it after a setup audit or whenever you
+  change models. `references/superseded-patterns.md` is the
+  community's list of rule shapes already found superseded, dated, and
+  open to pull requests.
 - **`/collab-dna:principles`** — the moves, one paragraph first, then
   the list.
 
@@ -64,6 +75,7 @@ collab-dna/
 │   ├── audit.md          /collab-dna:audit
 │   ├── retro.md          /collab-dna:retro
 │   ├── setup-audit.md    /collab-dna:setup-audit
+│   ├── prune.md          /collab-dna:prune
 │   └── principles.md     /collab-dna:principles
 └── skills/collab-dna/
     ├── SKILL.md
@@ -71,11 +83,14 @@ collab-dna/
     │   ├── principles.md          the sixteen moves, with evidence and counterweights
     │   ├── audit-rubric.md        procedure, stats signals, report shapes, tone
     │   ├── setup-rubric.md        the six setup surfaces and the setup report shape
+    │   ├── supersession-rubric.md the prune pass: buckets, questions, evidence, conflict of interest
+    │   ├── superseded-patterns.md rule shapes found superseded, dated; leads, not verdicts
     │   ├── annotated-session.md   a real three-day session, human turns only, moves labelled
     │   └── handover-case.md       the case the principles came from
     └── scripts/
         ├── extract_session.py     JSONL transcript → readable markdown + stats
-        └── inspect_setup.py       read-only setup inventory, secrets masked
+        ├── inspect_setup.py       read-only setup inventory, secrets masked
+        └── find_stale.py          missing paths, old rule lines, state claims, memory drift, last-pass stamp
 ```
 
 ## How the audit reads a session
