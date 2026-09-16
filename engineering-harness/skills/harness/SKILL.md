@@ -71,15 +71,12 @@ as-is. Either way, check for and offer to append the workflow rules.
 2. **Automatic Behaviors** — does it have a "How Claude Code Should Work"
    or equivalent section with "when X, do Y" rules? If missing, offer
    to append the template from `references/claude-md-rules.md` (Block 1).
-3. **Self-healing** — does it have a "When something breaks" section?
-   Claude Code should know how to diagnose and fix common issues without
-   the user asking. If missing, suggest adding it.
-4. **Deep Reference pointers** — does it have a table pointing to docs/
+3. **Deep Reference pointers** — does it have a table pointing to docs/
    files? CLAUDE.md should be a router, not an encyclopedia.
-5. **Workflow rules** — are the four Linear workflow rules present
+4. **Workflow rules** — are the four Linear workflow rules present
    (see Part 3)? If missing, offer to append from
    `references/claude-md-rules.md` (Block 2).
-6. **Planning and estimation** — does it say plans carry no time
+5. **Planning and estimation** — does it say plans carry no time
    estimates and close batches on gates? If missing, offer to
    append from `references/claude-md-rules.md` (Block 3). The full
    reasoning, procedure, and planning prompt live in
@@ -246,7 +243,6 @@ not *how things work* (architecture docs).
   being asked. This is the most important section. It covers:
   - When building UI → follow design system, use existing components
   - When creating data → create migrations, use the data layer
-  - When something breaks → self-healing steps (sync, reset, reinstall)
   - Before finishing → always build, always test
 - **Decision filter** — the project's north star for prioritization
   (e.g., "does this make the demo more compelling?")

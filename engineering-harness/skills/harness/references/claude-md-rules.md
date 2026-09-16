@@ -7,7 +7,7 @@ Do not overwrite any existing content.
 ## How to check what's missing
 
 1. **Automatic Behaviors** — look for "How Claude Code Should Work" or
-   "Automatic Behaviors" or "When building" / "When something breaks"
+   "Automatic Behaviors" or "When building" / "Before finishing"
 2. **Workflow Rules** — look for "Workflow Rules" or "Linear" or
    "Before Creating Issues"
 3. **Planning and Estimation** — look for "Planning and Estimation" or
@@ -39,16 +39,10 @@ These rules apply automatically every session. The user should not need to ask.
 - New fixture/seed data goes in the project's data directory.
 - New queries go through the existing data layer pattern.
 
-### When something breaks
-1. Database errors → re-sync or reset the local database
-2. Build errors after pulling → reinstall dependencies, then rebuild
-3. Services not running → restart them (Docker, dev server, etc.)
-
 ### Before finishing any task
 1. Run the build command — never done without a passing build.
 2. If you created a migration → test it.
 3. If you modified data → verify it loads.
-4. Never commit credentials or .env files.
 ```
 
 ---
