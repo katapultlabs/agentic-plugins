@@ -71,10 +71,16 @@ This signals to the rest of the team (human and agent) that the issue
 is being handled.
 
 ### On Completing a Task
-1. Move the Linear issue to "Done" (or the team's equivalent state)
-2. Post a comment summarizing what was done: files changed, approach
-   taken, and a link to the PR if applicable
-3. If new follow-up work was discovered, create a new issue (after
+1. Check the issue's agreed acceptance criteria and the team's review/merge
+   requirements. An open PR or passing tests alone is not enough. If a
+   required check failed or is unverified, or required review/merge is
+   pending, post the evidence and blocker, keep an appropriate non-complete
+   state, and stop. Ask if the criteria are unclear.
+2. Post a comment with files changed, approach, acceptance results and
+   evidence, and a PR link if applicable.
+3. Only then move the issue to "Done" (or the team's equivalent state)
+   and confirm the status change.
+4. If new follow-up work was discovered, create a new issue (after
    checking for duplicates) and link it to the completed one
 ```
 
@@ -102,11 +108,20 @@ sequence and dependencies instead. If asked for an estimate, push back
 once and answer only if the user confirms.
 
 ### Sequence by dependency and risk
-Order units only by what must exist first. Risk creates a review gate,
-not an ordering. Collapse work into as few batches as the dependency
-graph allows. Serialize only work that shares state: overlapping files,
-migrations, the shared local database, production data, irreversible
-operations. Name the shared state that forces it.
+Order units by what must exist first. Risk alone creates a review gate.
+An unknown that could change a shared schema, interface, or authorization
+model is a dependency: resolve it before its consumers start. Unrelated
+work can continue. Before parallel writes, name each unit's write targets
+and verify isolation or exclusive ownership. Resolve unknown sharing;
+separate state where practical and serialize what must remain shared.
+Migrations, production data, and irreversible operations still run one
+at a time.
+
+### Parallel execution
+Independent units are eligible for parallel execution, not automatic
+delegation. Multi-agent work requires user opt-in in the session or a
+standing CLAUDE.md rule, and separate contexts must earn their cost.
+Worktrees isolate files, not databases, ports, build output, or accounts.
 
 ### Foundation first
 Schema, shared types, contracts, and tokens land and build alone. Then
@@ -118,7 +133,10 @@ One agent, one unit it can hold whole. Past that, split.
 ### Batches close on gates
 Every batch has a concrete exit gate (verify green, behavioral tests,
 greps for stale patterns, screenshots of the flow) and closes only when
-it passes. A batch is a commit boundary. Progress is gates passed.
+it passes. A batch is a commit boundary. The commit rolls back source
+changes, not data or external effects. For stateful work, name the recovery
+action and stop condition in the rollout plan. Check what already happened
+before retrying interrupted work. Progress is gates passed.
 Before a refactor, write behavioral tests against current behavior and
 keep them green.
 
