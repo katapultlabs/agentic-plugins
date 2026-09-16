@@ -47,11 +47,6 @@ These rules apply automatically every session. The user should not need to ask.
 - New fixture data goes in `src/data/`. Update the seed script after adding.
 - New queries go through the data layer in `src/lib/data/`.
 
-### When something breaks
-1. [Most common fix — e.g., run sync/reset command]
-2. [Second fix — e.g., reinstall dependencies]
-3. [Third fix — e.g., restart services]
-
 ### Before finishing any task
 1. Run `pnpm build` — never done without a passing build.
 2. If you created a migration → run migration test.
@@ -85,10 +80,8 @@ These rules apply automatically every session. The user should not need to ask.
 1. **82 lines, not 450.** Claude Code loads this every session. Lean = fast.
 2. **Behavioral rules, not reference docs.** "When X, do Y" is actionable.
    "Here is the architecture" is not.
-3. **Self-healing built in.** Claude Code knows how to fix common issues
-   without the user diagnosing them.
-4. **Pointers, not content.** Deep docs live in `docs/` and are loaded
+3. **Pointers, not content.** Deep docs live in `docs/` and are loaded
    only when the current task needs them.
-5. **Decision filter.** Every project should have a north star that
+4. **Decision filter.** Every project should have a north star that
    Claude Code uses to prioritize ("does this make the demo more
    compelling?" or "does this improve test coverage?").
