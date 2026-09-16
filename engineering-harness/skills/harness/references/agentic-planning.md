@@ -81,10 +81,6 @@ and nail it. When an agent gets "build the entire features section," it
 glosses over details. When it gets one focused component with exact
 values, it gets it right.
 
-The ceiling is roughly 150 lines of spec per unit. Past that, split. "But
-it's all related" doesn't override the number; that's a mechanical check
-precisely because "it's all related" is what everyone says.
-
 ### 6. Foundation first, then everything at once.
 
 Some things are genuinely sequential because everything else consumes
@@ -95,16 +91,25 @@ The common shape is db → api → web. Schema and query exports land and
 build first. Routes and screens then run in parallel against the built
 contract.
 
-### 7. Fan-out numbers.
+### 7. Fan-out.
 
-Three or more independent units means parallel agents. The sane band is 5
-to 10 at once. Past about 12, agents start backing off on shared rate
-limits and the gains evaporate. For 1 or 2 units, just do them inline.
+Three or more independent units can fan out to parallel agents. Whether
+they should depends on whether each unit needs its own context: a large
+or noisy unit earns its own agent, while a handful of small units is
+usually faster done serially in one context. For 1 or 2 units, do them
+inline.
 
-Every agent works in its own git worktree on its own branch. The
-orchestrator (you, or the lead agent) merges at the end and resolves
-conflicts with full context of what everyone was asked to do. Two agents
-on one branch is how work gets silently overwritten.
+Fan-out is an opt-in in Claude Code. The harness only runs a multi-agent
+workflow when the user has said so, in the session or in a standing
+CLAUDE.md line. The band that worked in practice is 5 to 10 agents at
+once; past about 12, agents backed off on shared rate limits and the
+gains evaporated. That was measured on org-brain's 452-source bulk run;
+re-measure before relying on it.
+
+Isolation is the harness's job now. Each agent gets its own git worktree
+and branch, and the orchestrator merges at the end with full context of
+what everyone was asked to do. Confirm it is on; don't build it by hand.
+Two agents on one branch is how work gets silently overwritten.
 
 ### 8. Measure progress in gates passed.
 
@@ -144,7 +149,8 @@ who needs context, not a junior who needs instructions.
 5. **Everything else is one parallel batch.** Cap each unit at what one
    agent can hold. Split until it fits.
 6. **Write the exit gate for each batch.** Concrete and checkable.
-7. **Run it.** Worktree per agent, orchestrator merges, gate, next batch.
+7. **Run it.** One worktree per agent, which the harness provides,
+   orchestrator merges, gate, next batch.
 8. **Human eyes on gates and on the risky tier.** Nowhere else by default.
 
 ## Prompt to hand the agent
@@ -163,8 +169,8 @@ Produce:
 3. The units that must serialize, and the specific shared state
    (file, table, dataset) that forces each one.
 4. Every remaining unit, grouped into as few parallel batches as the
-   dependency graph allows. Cap each unit at ~150 lines of spec; split
-   anything bigger.
+   dependency graph allows. Size each unit so one agent can hold the
+   whole spec; split anything bigger.
 5. A concrete exit gate per batch (commands, tests, greps, screenshots).
 6. The risky-tier units that need a human diff read before landing.
 
@@ -206,8 +212,8 @@ them.
 Pulled together from rules that were already in use across Katapult repos:
 the ProCarmelita and dealership-platform "Estimation and execution" and
 "Lightweight collaboration" sections, Sofia's no-estimates hard rule, the
-clone-website skill's 150-line complexity budget and foundation-first
-dispatch, org-brain's measured fan-out limits from a 452-source bulk run,
+clone-website skill's foundation-first dispatch, org-brain's measured
+fan-out limits from a 452-source bulk run,
 the Reflections cross-boundary team shape, and the Katapult Way sessions on
 outcome-based collaboration. If you find a better rule in a repo, promote
 it here.

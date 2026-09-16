@@ -119,8 +119,7 @@ Schema, shared types, contracts, and tokens land and build alone. Then
 everything that consumes them can proceed.
 
 ### Size units by spec, not time
-One agent, one unit it can hold whole. Roughly 150 lines of spec is the
-ceiling; past that, split. "It's all related" is not an override.
+One agent, one unit it can hold whole. Past that, split.
 
 ### Batches close on gates
 Every batch has a concrete exit gate (verify green, behavioral tests,
