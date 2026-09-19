@@ -12,7 +12,7 @@ agent to decide alone.
 
 **Author:** [Name]
 **Date:** [YYYY-MM-DD]
-**Status:** Draft | In Review | Accepted | Rejected | Superseded
+**Status:** Draft | In Review | Accepted | Rejected | Superseded by RFC-NNN
 **Reviewers:** [Names — aim for 2-3 reviewers with relevant expertise]
 **Linear Issue:** [Link to tracking issue if applicable]
 

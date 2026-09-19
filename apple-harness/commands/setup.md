@@ -25,7 +25,9 @@ This auto-detects your app name, scheme, and platform, then sets up everything.
 4. Copies `scripts/` into the project (xcbuild.sh, resolve-sim.sh, doctor.sh, clean.sh, setup.sh)
 5. Generates a `Makefile` with detected values filled in
 6. Merges harness entries into `.gitignore`
-7. Creates or appends Apple Harness section to `CLAUDE.md`
+7. Creates or appends Apple Harness section to `CLAUDE.md` (or appends it
+   to `AGENTS.md` when the project has one and no `CLAUDE.md`, so the new
+   file does not stop Claude Code reading `AGENTS.md`)
 
 ## Override auto-detection
 

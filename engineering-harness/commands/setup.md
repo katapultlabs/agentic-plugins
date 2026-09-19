@@ -16,12 +16,18 @@ For each check:
 
 After all checks complete, print the preflight summary checklist.
 
-If CLAUDE.md is missing, tell the engineer to run `/init` first — it
-auto-detects the project's stack and generates a tailored CLAUDE.md.
-Once that's done, continue the harness preflight to layer on workflow
-rules and scaffolding.
+If CLAUDE.md is missing and there is no `AGENTS.md` either, tell the
+engineer to run `/init` first — it auto-detects the project's stack and
+generates a tailored CLAUDE.md. Once that's done, continue the harness
+preflight to layer on workflow rules and scaffolding.
 
-If this is a brand-new repo with nothing set up: "Looks like this repo
+If the repo has an `AGENTS.md` and no CLAUDE.md, do not run `/init` and
+do not create a CLAUDE.md: Claude Code reads `AGENTS.md` only while no
+CLAUDE.md exists, so a new one would silence it. Run the checks against
+`AGENTS.md` and append blocks there (skill §1.1).
+
+If this is a brand-new repo with nothing set up (no CLAUDE.md, no
+AGENTS.md): "Looks like this repo
 needs the full setup. Start by running `/init` to generate your
 CLAUDE.md, then run `/harness:setup` again and I'll handle the rest —
 MCP configs, docs structure, and workflow rules."

@@ -5,8 +5,9 @@ humans and agents collaborate as peers — with Linear as the workflow backbone.
 
 ## What It Does
 
-- **Environment preflight** — verifies Linear MCP, GitHub CLI (`gh`), CLAUDE.md,
-  and repo structure are properly configured
+- **Environment preflight** — verifies Linear MCP, GitHub CLI (`gh`), CLAUDE.md
+  (or an `AGENTS.md` that no CLAUDE.md is shadowing), and repo structure are
+  properly configured
 - **Repo scaffolding** — creates the directory structure for agentic collaboration:
   docs with PRD, ADR, and RFC templates, agent-guides, and .claude/ dirs
 - **Workflow enforcement** — duplicate checking before filing issues, sprint
@@ -16,6 +17,10 @@ humans and agents collaborate as peers — with Linear as the workflow backbone.
   batches with exit gates, fan-out limits. Full guide in
   [`skills/harness/references/agentic-planning.md`](./skills/harness/references/agentic-planning.md),
   plus a CLAUDE.md append block that `/harness:setup` offers to install
+- **Past decisions as evidence** — ADRs record their premises, reversibility,
+  and a reopen-when trigger; a CLAUDE.md append block tells agents to treat
+  decision records as evidence, not commitments, to keep the old caution for
+  one-way doors, and to supersede a record rather than work around it
 
 ## Components
 
@@ -47,7 +52,8 @@ humans and agents collaborate as peers — with Linear as the workflow backbone.
 ```
 /harness:setup
 ```
-Walks through everything: CLAUDE.md creation, MCP verification, docs scaffolding.
+Walks through everything: CLAUDE.md creation (or adopting an existing
+`AGENTS.md` without shadowing it), MCP verification, docs scaffolding.
 
 ### Daily Workflow
 ```

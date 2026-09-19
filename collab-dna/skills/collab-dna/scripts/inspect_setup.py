@@ -184,15 +184,49 @@ def main():
         d = os.sep.join(parts[:i]) or os.sep
         if d == HOME:
             continue
-        for name in ("CLAUDE.md", "CLAUDE.local.md", "AGENTS.md"):
+        for name in ("CLAUDE.md", os.path.join(".claude", "CLAUDE.md"), "CLAUDE.local.md",
+                     "AGENTS.md", os.path.join(".claude", "AGENTS.md")):
             candidates.append(os.path.join(d, name))
+    claude_files, agents_files = [], []
     for c in candidates:
         if os.path.exists(c):
             t = read_text(c)
             label = c.replace(HOME, "~")
-            scope = "global" if c.startswith(os.path.join(HOME, ".claude")) else ("project" if os.path.dirname(c) == project else "ancestor")
+            is_global = c == candidates[0]
+            in_project = os.path.dirname(c) in (project, os.path.join(project, ".claude"))
+            scope = "global" if is_global else ("project" if in_project else "ancestor")
             out.append(f"\n### {label} ({scope}, {t[0]} lines)\n")
             out += fenced(t[1], "markdown")
+            if not is_global:
+                (agents_files if os.path.basename(c) == "AGENTS.md" else claude_files).append(c)
+    # AGENTS.md is either-or by default (Claude Code 2.1.277+): it loads only
+    # when no CLAUDE.md / .claude/CLAUDE.md / CLAUDE.local.md exists in the
+    # project or above it, unless one of those imports it or the setting says both.
+    if agents_files:
+        mode = (((gs.get("pluginConfigs") or {}).get("agents-md@builtin") or {}).get("options") or {}).get("instructionFiles") \
+            or "claude-md-or-agents-md (default)"
+        linked = []
+        for c in claude_files:
+            try:
+                if os.path.islink(c) and os.path.basename(os.path.realpath(c)) == "AGENTS.md":
+                    linked.append(c)
+                    continue
+                with open(c, encoding="utf-8", errors="replace") as f:
+                    if re.search(r"(?m)^\s*@\S*AGENTS\.md\b", f.read()):
+                        linked.append(c)
+            except OSError:
+                pass
+        out.append(f"\n**AGENTS.md loading** (Project instructions setting: {mode})")
+        if not claude_files:
+            out.append("- no CLAUDE.md in the project or above it: AGENTS.md is read directly (not on Bedrock, Vertex, Foundry, or with hooks disabled).")
+        elif linked:
+            out.append("- reached through an import or symlink from: " + ", ".join(p.replace(HOME, "~") for p in linked))
+        elif mode.startswith("claude-md-and-agents-md"):
+            out.append("- read alongside CLAUDE.md because of the setting.")
+        else:
+            out.append("- SHADOWED: " + ", ".join(p.replace(HOME, "~") for p in claude_files) +
+                       " exist(s) and none imports @AGENTS.md, so Claude Code does not read: " +
+                       ", ".join(p.replace(HOME, "~") for p in agents_files))
     rules = sorted(glob.glob(os.path.join(project, ".claude", "rules", "*.md")))
     if rules:
         out.append(f"\n### .claude/rules ({len(rules)} files)\n")

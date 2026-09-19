@@ -27,7 +27,7 @@
       "name": "react-native-simulator-harness",
       "source": "./react-native-simulator-harness",
       "description": "Autonomous iOS Simulator testing for React Native and Expo projects.",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "name": "site",
@@ -39,13 +39,13 @@
       "name": "harness",
       "source": "./engineering-harness",
       "description": "Opinionated environment preflight, repo scaffolding, and workflow enforcement for teams where humans and agents collaborate as peers.",
-      "version": "0.2.0"
+      "version": "0.3.0"
     },
     {
       "name": "apple-harness",
       "source": "./apple-harness",
       "description": "Build, test, and run native Apple platform apps (iOS, macOS) from Claude Code with agent-isolated builds, simulator auto-resolution, and strict Swift 6 defaults.",
-      "version": "0.2.0"
+      "version": "0.2.1"
     },
     {
       "name": "brand-dna",
@@ -57,7 +57,7 @@
       "name": "collab-dna",
       "source": "./collab-dna",
       "description": "How we build with agents, captured as sixteen auditable moves from real sessions. Audit any past Claude Code session, a whole project, the current conversation, or the setup that shapes them, and prune the rules a newer harness has superseded.",
-      "version": "0.3.0"
+      "version": "0.4.0"
     }
   ]
 }

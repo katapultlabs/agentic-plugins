@@ -80,7 +80,7 @@ Run `scripts/setup.sh` from any directory to install prerequisites and verify:
 bash <skill-path>/scripts/setup.sh
 ```
 
-To add the CLAUDE.md testing section to a project, adapt `assets/claude-md-template.md` — replace `{{BUNDLE_ID}}` and `{{DEVICE_NAME}}` placeholders.
+To add the CLAUDE.md testing section to a project, adapt `assets/claude-md-template.md` — replace `{{BUNDLE_ID}}` and `{{DEVICE_NAME}}` placeholders. If the project keeps its instructions in `AGENTS.md` and has no `CLAUDE.md`, add the section to `AGENTS.md`: creating a `CLAUDE.md` there stops Claude Code reading `AGENTS.md`.
 
 ## Environment Switching
 

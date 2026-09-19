@@ -166,9 +166,18 @@ if [[ "$FORCE" != true ]]; then
   fi
 fi
 
-# Determine what would happen to .gitignore and CLAUDE.md
+# Determine what would happen to .gitignore and the instruction file
 GITIGNORE="$PROJECT_DIR/.gitignore"
 CLAUDEMD="$PROJECT_DIR/CLAUDE.md"
+INSTR_NAME="CLAUDE.md"
+
+# A project that keeps its instructions in AGENTS.md and has no CLAUDE.md:
+# Claude Code (2.1.277+) reads AGENTS.md only while no CLAUDE.md exists, so
+# creating one here would silence it. Write the section into AGENTS.md instead.
+if [[ ! -f "$CLAUDEMD" && ! -f "$PROJECT_DIR/.claude/CLAUDE.md" && ! -f "$PROJECT_DIR/CLAUDE.local.md" && -f "$PROJECT_DIR/AGENTS.md" ]]; then
+  CLAUDEMD="$PROJECT_DIR/AGENTS.md"
+  INSTR_NAME="AGENTS.md"
+fi
 
 if [[ -f "$GITIGNORE" ]]; then
   GITIGNORE_ACTION="merge"
@@ -211,9 +220,9 @@ if [[ "$DRY_RUN" == true ]]; then
   echo ""
 
   case "$CLAUDEMD_ACTION" in
-    skip)   echo "  [skip] CLAUDE.md (already has Apple Harness section)" ;;
-    append) echo "  [append] CLAUDE.md → add Apple Build Harness section" ;;
-    create) echo "  [create] CLAUDE.md → $PROJECT_DIR/CLAUDE.md" ;;
+    skip)   echo "  [skip] $INSTR_NAME (already has Apple Harness section)" ;;
+    append) echo "  [append] $INSTR_NAME → add Apple Build Harness section" ;;
+    create) echo "  [create] $INSTR_NAME → $CLAUDEMD" ;;
   esac
   echo ""
 
@@ -274,13 +283,13 @@ else
   echo "[ok] Created .gitignore"
 fi
 
-# ─── Append CLAUDE.md section ───────────────────────────────────────────────
+# ─── Append instruction-file section (CLAUDE.md, or AGENTS.md) ──────────────
 SAFE_APP_CLAUDE="$(sed_escape "$APP_NAME")"
 SAFE_PLATFORM_CLAUDE="$(sed_escape "$PLATFORM")"
 
 case "$CLAUDEMD_ACTION" in
   skip)
-    echo "[ok] CLAUDE.md already has Apple Harness section"
+    echo "[ok] $INSTR_NAME already has Apple Harness section"
     ;;
   append)
     echo "" >> "$CLAUDEMD"
@@ -289,7 +298,7 @@ case "$CLAUDEMD_ACTION" in
       -e "s/{{PLATFORM}}/$SAFE_PLATFORM_CLAUDE/g" \
       -e "s/{{BUNDLE_ID}}/TODO/g" \
       "$PLUGIN_DIR/assets/claude-md-template.md" >> "$CLAUDEMD"
-    echo "[ok] Appended Apple Harness section to CLAUDE.md"
+    echo "[ok] Appended Apple Harness section to $INSTR_NAME"
     ;;
   create)
     sed \
@@ -297,7 +306,7 @@ case "$CLAUDEMD_ACTION" in
       -e "s/{{PLATFORM}}/$SAFE_PLATFORM_CLAUDE/g" \
       -e "s/{{BUNDLE_ID}}/TODO/g" \
       "$PLUGIN_DIR/assets/claude-md-template.md" > "$CLAUDEMD"
-    echo "[ok] Created CLAUDE.md with Apple Harness section"
+    echo "[ok] Created $INSTR_NAME with Apple Harness section"
     ;;
 esac
 

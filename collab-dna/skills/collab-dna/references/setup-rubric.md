@@ -109,15 +109,40 @@ a guardrail or a tax.
 
 **Good:** a short global file of standing directives with reasons, a
 project file that routes (rules plus a table of where to look) in
-under about a hundred lines, one intake (AGENTS.md pointing at
-CLAUDE.md or the reverse), no ancestor files, no contradictions, and
-the operating rules the session audit found retyped present as
-numbered rules.
+under about a hundred lines, one intake (a `CLAUDE.md` alone, an
+`AGENTS.md` alone, or a `CLAUDE.md` whose first line imports
+`@AGENTS.md`), no ancestor files, no contradictions, and the operating
+rules the session audit found retyped present as numbered rules.
 
 Claude Code loads the global `~/.claude/CLAUDE.md`, every `CLAUDE.md`
-and `AGENTS.md` from the project's ancestor directories down, the
-project's own, `CLAUDE.local.md`, and `.claude/rules/*.md`. All of it is
-in context every turn. Read every one in the inventory.
+(and `.claude/CLAUDE.md`) from the project's ancestor directories down,
+the project's own, `CLAUDE.local.md`, and `.claude/rules/*.md`. All of
+it is in context every turn. `AGENTS.md` is either-or by default: since
+v2.1.277 Claude Code reads it only when no `CLAUDE.md`,
+`.claude/CLAUDE.md`, or `CLAUDE.local.md` exists in the working
+directory or above it (the **Project instructions** setting in `/config`
+can change that to both, `claude-md-and-agents-md`). Read every file in
+the inventory, and work out which ones the harness is actually loading;
+the inventory's "AGENTS.md loading" line states which case applies.
+
+- **An `AGENTS.md` that nothing reads.** Both files exist, the
+  `CLAUDE.md` does not import `@AGENTS.md` and is not a symlink to it,
+  and the setting is the default. The team's shared instructions are
+  silent in every Claude session and nobody was told. Fix: make
+  `@AGENTS.md` the first line of `CLAUDE.md`, or set
+  `claude-md-and-agents-md`.
+- **A personal `CLAUDE.local.md` shadowing the team's `AGENTS.md`.**
+  The local file counts as a CLAUDE.md, so adding one to a repo that
+  relies on `AGENTS.md` switches `AGENTS.md` off for that person only.
+  Same fix.
+- **A tool that created a `CLAUDE.md` in an AGENTS.md repo.** `/init`,
+  a plugin installer, or a setup script wrote a small `CLAUDE.md` and
+  shadowed the real instructions. Look at the file's commit history;
+  move its content under an `@AGENTS.md` import.
+- **AGENTS.md relied on where it cannot load.** Bedrock, Vertex, and
+  Foundry sessions, sessions with hooks disabled, and the first session
+  after an upgrade do not read `AGENTS.md` directly. The import is the
+  portable form.
 
 - **Rules that make stops the default.** "Ask before making changes",
   "confirm each step", "stop and report after every task", "open a PR
@@ -191,6 +216,16 @@ only in memory or chat.
 - **Stale or wrong memory entries.** A memory that names a decision
   since reversed, or a file that no longer exists, misleads every
   session. Delete or correct.
+- **Decisions reversed in practice, never superseded on the record.**
+  The same rot in the repo's own docs: an ADR or spec still marked
+  accepted while the code does something else, or a workaround built
+  beside it. Every session that reads the record gets two truths. The
+  fix is a superseding record, not an edit to the old one. The mirror
+  finding: no instruction anywhere says how to treat old records, so
+  agents either obey expired decisions or reopen live ones on taste.
+  The standing directive is "past decisions are evidence, not
+  commitments; reopen on failed premises or cheap reversal; one-way
+  doors keep the old caution; supersede, do not work around".
 - **Repo docs that do not hold the operating rules.** The session
   audit's repeated corrections ("same rules as always") are the test:
   if the rules are not in `CLAUDE.md` or the ways-of-working doc, the

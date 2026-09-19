@@ -21,7 +21,7 @@ Once the plugin is installed, ask Claude from your Xcode project root:
 
 > "Set up the Apple build harness for this project"
 
-Claude will run the installer, which auto-detects your app name, scheme, and platform from the `.xcodeproj`, then sets up scripts, Makefile, .gitignore, and CLAUDE.md. After install:
+Claude will run the installer, which auto-detects your app name, scheme, and platform from the `.xcodeproj`, then sets up scripts, Makefile, .gitignore, and CLAUDE.md (in a project that uses `AGENTS.md` and has no CLAUDE.md, the section goes into `AGENTS.md` so a new CLAUDE.md does not shadow it). After install:
 
 ```bash
 make build          # Build with strict Swift 6 flags

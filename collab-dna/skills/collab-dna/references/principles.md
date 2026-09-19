@@ -133,7 +133,9 @@ plan, not just the number.
 
 The complement: when the answer is good, accept it in two words. "Like
 it." "Yes, please." "Yes, make it so." Skepticism that never resolves
-is just friction.
+is just friction. Re-litigating is reopening a settled question with no
+new evidence; reopening one whose premises have failed is move 8, not
+friction.
 
 **Audit:** Did the human challenge at least one recommendation,
 estimate, or fact? Did they accept good answers quickly, or re-litigate?
@@ -192,13 +194,24 @@ the person who will own it. None of them became a discussion. The
 reason travels with the decision so it can be recorded and, later,
 revisited on evidence rather than memory.
 
+The recorded reason is also what makes a decision reopenable. A past
+decision (an ADR, a spec, a prior thread) is evidence, not a
+commitment. Reopen it when its stated premises no longer hold or when
+reversal has become cheap; otherwise the burden is on the change.
+One-way doors (data models, public contracts, migrations) keep the old
+caution. And when a decision is revisited, supersede the record rather
+than working around it: a workaround beside a record that still says
+"accepted" hands the next session two truths.
+
 The same session shows the reverse: a decision the lead did not make
 ("which auth provider") was asked as a question, answered with a
 recommendation, and then decided. Options are for the things the human
 genuinely has not decided.
 
 **Audit:** Were small decisions made in one turn with a reason? Did
-deferred items get tracked somewhere durable, or just dropped?
+deferred items get tracked somewhere durable, or just dropped? When an
+earlier decision was reopened, had a premise failed or reversal become
+cheap, and was the record superseded or worked around?
 
 ---
 
@@ -434,7 +447,8 @@ legacy. Trust nothing by default, the agent's estimates and training
 included, but accept good answers in two words. Ask where requirements
 came from and whether numbers are real. Reopen methods while they are
 working. Decide small things in one turn with a reason and track what
-you defer. Spend effort on product and verify against the running
+you defer; treat past decisions as evidence, not commitments, and
+supersede the record when you reopen one. Spend effort on product and verify against the running
 system; strip ceremony and schedule scaffolding for removal. Run the
 agent on a long leash, pull for gates not progress, force a read-back
 after a big miss, and be the fast hands for what only you can do. When
@@ -455,7 +469,7 @@ the examples are above.
 5. **Trust no source by default, the agent included.** Did the human challenge at least one recommendation, estimate, or fact? Did they accept good answers quickly, or re-litigate?
 6. **Ask for provenance before you accept a requirement.** When a requirement, number, or pattern appeared, did the human ask where it came from or whether it was real? Or did plausible things pass?
 7. **Reopen tools and methods from first principles, mid-flow.** Did the human ever question a method or tool while it was working, or only when it failed?
-8. **Decide fast, with the reason, and track what you are not solving.** Were small decisions made in one turn with a reason? Did deferred items get tracked somewhere durable, or just dropped?
+8. **Decide fast, with the reason, and track what you are not solving.** Were small decisions made in one turn with a reason? Did deferred items get tracked somewhere durable, or just dropped? When an earlier decision was reopened, had a premise failed or reversal become cheap, and was the record superseded or worked around?
 9. **Product over prose; verify against the real thing.** What proportion of the session's output was product versus description of product? Was the verification gate "the flow runs against the real stack" or "the log says it passed"?
 10. **Strip the ceremony the agent adds defensively.** Did the agent add process the human then removed? Did the removal get written down, or will it recur?
 11. **Plan for the scaffolding to leave.** Was anything temporary created? Does it have a recorded removal condition?

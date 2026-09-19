@@ -1,7 +1,7 @@
 ---
 name: collab-dna
 description: "How we build with agents, captured as auditable moves. Use this whenever someone wants to get better at working with Claude Code or any coding agent: 'audit my session', 'review how I worked with you', 'retro on this conversation', 'how could I have driven this better', 'what should I improve in how I prompt', 'grade my collaboration', 'look at my last session', 'why did this take so many turns', 'am I using you well', 'show me the principles', 'how does our lead work with Claude', 'audit my setup', 'check my CLAUDE.md', 'is my harness slowing me down', 'why does Claude keep stopping to ask me', 'what plugins and rules am I carrying', 'prune my CLAUDE.md', 'which of my rules are outdated', 'what here is cruft', 'clean up my memory files', 'we upgraded models, what should change in my setup'. Also use it when a session has just ended badly (rebuilt artifacts, many corrections, wrong direction held too long) and the human asks what went wrong, even if they do not say 'audit'. Do not use it for code review; it reviews the human's moves, not the code."
-version: 0.3.0
+version: 0.4.0
 allowed-tools: Bash, Read, Glob, Grep
 ---
 

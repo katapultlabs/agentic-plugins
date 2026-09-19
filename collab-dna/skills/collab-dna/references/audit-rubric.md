@@ -46,6 +46,10 @@ Three things make an audit useful and each is easy to skip:
    kept scaffolding on purpose), score it on whether the inversion was
    stated with its reason; a stated, reasoned inversion is present, an
    unstated one is partial, and say which in the evidence cell.
+   Reopened decisions split across two moves: reopening with no new
+   evidence is re-litigation (move 5, a cost); reopening because a
+   premise failed or reversal got cheap is move 8 done well, provided
+   the record was superseded and not worked around.
 5. Pick the findings that cost the most: one to three. A single
    finding that matters beats three where the third is padding; say
    when there is only one. Cost is measured

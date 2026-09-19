@@ -8,8 +8,8 @@ since the last prune pass. Read-only unless --stamp. Secrets are masked.
 Usage:
   find_stale.py [--project DIR] [--out FILE] [--age-days N] [--stamp]
 
-Surfaces: ~/.claude/CLAUDE.md, every CLAUDE.md / CLAUDE.local.md /
-AGENTS.md from the project's ancestors down, .claude/rules/*.md, and the
+Surfaces: ~/.claude/CLAUDE.md, every CLAUDE.md / .claude/CLAUDE.md /
+CLAUDE.local.md / AGENTS.md / .claude/AGENTS.md from the project's ancestors down, .claude/rules/*.md, and the
 project's memory directory. The prune pass reads this plus the setup
 inventory; the judgment about what is superseded is the model's, not this
 script's.
@@ -86,6 +86,12 @@ def resolve(ref, project, filedir):
     return ref, any(os.path.exists(c) for c in cands)
 
 
+INSTRUCTION_NAMES = (
+    "CLAUDE.md", os.path.join(".claude", "CLAUDE.md"), "CLAUDE.local.md",
+    "AGENTS.md", os.path.join(".claude", "AGENTS.md"),
+)
+
+
 def surfaces(project):
     files = []
     g = os.path.join(HOME, ".claude", "CLAUDE.md")
@@ -96,7 +102,7 @@ def surfaces(project):
         d = os.sep.join(parts[:i]) or os.sep
         if d == HOME:
             continue
-        for name in ("CLAUDE.md", "CLAUDE.local.md", "AGENTS.md"):
+        for name in INSTRUCTION_NAMES:
             p = os.path.join(d, name)
             if os.path.exists(p):
                 files.append(("project" if d == project else "ancestor", p))

@@ -94,6 +94,13 @@ calling them superseded. Three guards:
 
 ## Counterweights
 
+- A standing rule is a past decision, and the same test applies to it
+  as to an ADR: evidence, not a commitment. It is open again when the
+  premise it was written on has failed (that is what the three
+  questions establish) or when reversing it is cheap. Otherwise the
+  burden is on the change. Rules guarding one-way doors (production
+  data, migrations, public contracts, money) keep the old caution even
+  when the harness looks like it covers them.
 - Some rules exist because the model's defaults are wrong for this
   person, not because the model was weak. A "do pnpm for everything"
   line is not superseded by a model that knows pnpm exists.

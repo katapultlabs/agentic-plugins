@@ -15,7 +15,12 @@ Start working on a Linear issue. Follow this sequence:
 
 5. Load context: if the issue description references any files, PRDs,
    ADRs, or docs in the repo, read them so you have full context before
-   starting work.
+   starting work. Read decision records as evidence, not commitments:
+   check whether each one's status is still Accepted and whether its
+   stated premises still hold. If a premise has failed, or the task
+   would work around a record instead of superseding it, say so in the
+   summary before starting. One-way doors (data models, public
+   contracts, migrations) keep the old caution.
 
 6. Summarize: "I've picked up [ISSUE-ID]: [title]. It's now In Progress.
    Here's what I understand needs to happen: [brief summary]. Ready to

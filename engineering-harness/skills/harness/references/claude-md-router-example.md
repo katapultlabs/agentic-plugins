@@ -71,6 +71,14 @@ These rules apply automatically every session. The user should not need to ask.
 ## Workflow Rules
 
 [Linear/GitHub workflow rules — appended by /harness:setup]
+
+## Past Decisions
+
+Past decisions (ADRs, specs, prior threads) are evidence, not
+commitments. Reopen one when its stated premises no longer hold or when
+reversal is now cheap; otherwise the burden is on the change. One-way
+doors (data models, public contracts, migrations) keep the old caution.
+When we do revisit, supersede the record rather than working around it.
 ```
 
 ---

@@ -67,6 +67,22 @@ sessions and repositories.
 
 ## CLAUDE.md
 
+### "CLAUDE.md is missing, but the repo has an AGENTS.md"
+Nothing is missing. Claude Code (v2.1.277+) reads `AGENTS.md` as the
+project instructions when there is no `CLAUDE.md` or `CLAUDE.local.md`
+in the working directory or above it. Do not run `/init`: a new
+`CLAUDE.md` makes Claude stop reading `AGENTS.md`. `/harness:setup`
+appends its blocks to `AGENTS.md`. If you need both files, make the
+first line of `CLAUDE.md` an `@AGENTS.md` import; use the same import
+on Bedrock, Vertex, or Foundry, where `AGENTS.md` is not read directly.
+
+### "My AGENTS.md is being ignored"
+A `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` exists in the
+working directory or above it, and it does not import `@AGENTS.md`.
+Add the import, or set **Project instructions** in `/config` to
+`claude-md-and-agents-md` to read both. A personal `CLAUDE.local.md` is
+the usual culprit in a repo that otherwise relies on `AGENTS.md`.
+
 ### "CLAUDE.md is missing"
 Run `/init` in the repo first. Claude Code's built-in `/init` does
 self-discovery of your project — languages, frameworks, build commands,

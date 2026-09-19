@@ -17,7 +17,7 @@ description: >
   "what can run in parallel", "give me a roadmap", "estimate this".
   Use this skill liberally — if someone is asking about onboarding,
   project setup, or workflow hygiene, this is the skill to use.
-version: 0.2.0
+version: 0.3.0
 ---
 
 # Harness
@@ -43,10 +43,27 @@ walk through each check below and report a pass/fail checklist.
 
 ### 1.1 — CLAUDE.md Exists
 
-Check for `CLAUDE.md` at the repo root. This is the first and most
-important check because everything else depends on it.
+Check for `CLAUDE.md` at the repo root (or `.claude/CLAUDE.md`). This is
+the first and most important check because everything else depends on it.
 
-**If missing entirely:** tell the collaborator to run `/init` first. Claude
+**If there is no CLAUDE.md but there is an `AGENTS.md`:** that is a
+valid setup, not a missing file. Since v2.1.277 Claude Code reads
+`AGENTS.md` as the project instructions when no `CLAUDE.md` or
+`CLAUDE.local.md` exists in the working directory or above it. Treat
+`AGENTS.md` as the instruction file for every check below and append
+blocks to it. Do **not** run `/init` or create a `CLAUDE.md` beside it:
+once a `CLAUDE.md` exists, Claude Code stops reading `AGENTS.md`, and
+the team's shared instructions go silent. If the collaborator wants
+Claude-specific rules kept apart, create a `CLAUDE.md` whose first line
+is `@AGENTS.md` and put the Claude-only rules below the import. The
+same import is the fix for sessions that cannot read `AGENTS.md`
+directly (Bedrock, Vertex, Foundry).
+
+**If both exist:** check that `CLAUDE.md` imports `@AGENTS.md` (or is a
+symlink to it). If it does neither, Claude reads `CLAUDE.md` only and
+`AGENTS.md` is ignored; flag it and offer to add the import.
+
+**If both are missing:** tell the collaborator to run `/init` first. Claude
 Code's built-in `/init` command does self-discovery of the project —
 detecting languages, frameworks, build commands, test runners, and
 conventions — and generates a CLAUDE.md tailored to the actual repo.
@@ -82,6 +99,10 @@ as-is. Either way, check for and offer to append the workflow rules.
    reasoning, procedure, and planning prompt live in
    `references/agentic-planning.md`; point collaborators there when
    they ask how to break down or sequence a big piece of work.
+6. **Past decisions** — does it say decision records are evidence, not
+   commitments, and that a revisited one is superseded rather than
+   worked around? If missing, offer to append from
+   `references/claude-md-rules.md` (Block 4).
 
 ### 1.2 — Linear MCP
 
@@ -148,6 +169,7 @@ Print a clear checklist summarizing all results:
 Harness — Preflight
 ─────────────────────────────────────────────
 ✓ CLAUDE.md ............. exists, 4/4 workflow rules present
+                          (or: AGENTS.md in use, no CLAUDE.md shadowing it)
 ✓ Linear MCP ............ connected, authenticated
 ✓ GitHub CLI (gh) ....... authenticated as @username
 ✓ Engineering plugin .... installed
@@ -184,8 +206,8 @@ repo-root/
 │   │   └── TEMPLATE.md          # PRD template with agent-friendly
 │   │                            #   acceptance criteria
 │   ├── adrs/                    # Architecture decision records
-│   │   └── TEMPLATE.md          # ADR template: status, context,
-│   │                            #   decision, consequences
+│   │   └── TEMPLATE.md          # ADR template: status, premises,
+│   │                            #   decision, consequences, reopen-when
 │   ├── rfcs/                    # Request for comments / design docs
 │   │   └── TEMPLATE.md          # RFC template with reviewers section
 │   ├── guides/                  # Runbooks, onboarding, how-tos
@@ -210,12 +232,18 @@ repo-root/
 - **PRDs bridge humans and agents.** The template includes a "Success
   Criteria" section that doubles as acceptance criteria for agent-driven
   work, and a "Non-Goals" section that prevents scope creep for both.
-- **ADRs keep decisions durable.** When a human or agent makes an
-  architectural decision, it gets recorded so future sessions don't
-  re-derive or contradict it.
+- **ADRs keep decisions and their premises durable.** When a human or
+  agent makes an architectural decision, it gets recorded with the
+  premises it rests on, so a future session can tell whether it still
+  binds. A record is evidence, not a commitment: reopen it when its
+  premises no longer hold or reversal is now cheap; otherwise the
+  burden is on the change, and one-way doors (data models, public
+  contracts, migrations) keep the old caution. A revisited decision
+  gets a superseding ADR, never a workaround next to the old one.
 - **RFCs are for proposals that need review.** The template includes a
   reviewers section and a status field (Draft, In Review, Accepted,
-  Superseded) so agents know whether an RFC is still active.
+  Superseded by RFC-NNN) so agents know whether an RFC is still active
+  and where its replacement lives.
 
 ### Progressive Disclosure Model
 
@@ -336,7 +364,8 @@ collaboration actually work. Every issue tells its own story.
 ## Reference Files
 
 - **`references/claude-md-rules.md`** — append blocks for CLAUDE.md
-  (automatic behaviors + workflow rules + planning and estimation)
+  (automatic behaviors + workflow rules + planning and estimation +
+  past decisions)
 - **`references/agentic-planning.md`** — how to break down, sequence,
   and parallelize big work when agents build it: no time estimates,
   dependency-and-risk ordering, batches with exit gates, fan-out limits,

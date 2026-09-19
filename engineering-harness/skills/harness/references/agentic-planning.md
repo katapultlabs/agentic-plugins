@@ -49,6 +49,13 @@ Only the first question creates ordering. The second creates a review
 gate. Don't confuse them: "risky" means a human reads the diff before it
 lands, it doesn't mean it has to wait its turn.
 
+A plan inherits past decisions (ADRs, specs, prior threads) as evidence,
+not commitments. If a record's stated premises no longer hold, or
+reversing it is now cheap, the plan may reopen it, and the first unit of
+that work is the superseding record. Otherwise the burden is on the
+change. Reopening a one-way door (data models, public contracts,
+migrations) belongs to the risky tier: a human reads it before it lands.
+
 ### 3. Default to parallel. Serialize only what shares state.
 
 Overlapping files, database migrations, the shared local database,

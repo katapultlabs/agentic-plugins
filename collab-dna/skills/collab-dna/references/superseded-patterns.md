@@ -138,3 +138,45 @@ private text.
   TODO.
 - Observed: 2026-09-16.
 - Do: move to a task or a notes doc, or delete.
+
+### A CLAUDE.md that says in words "read AGENTS.md first"
+- Compensated for: Claude Code not reading `AGENTS.md`, in repos that
+  keep one file for every coding tool.
+- Superseded by: native `AGENTS.md` support. With no `CLAUDE.md` in the
+  working directory or above it, Claude Code reads `AGENTS.md` itself.
+  The prose pointer is now the thing in the way: its `CLAUDE.md`
+  switches the native read off, and Claude sees `AGENTS.md` only if it
+  decides to open the file.
+- Observed: 2026-09-19, Claude Code 2.1.278 (support landed in
+  2.1.277), Fable 5.1.
+- Verify: start a session in a repo with only an `AGENTS.md` and look
+  for the "no CLAUDE.md found; AGENTS.md loaded" line; read the
+  AGENTS.md section of the memory docs for the precedence table.
+- Do: delete the `CLAUDE.md` if the pointer is all it holds; otherwise
+  rewrite the sentence as an `@AGENTS.md` import on the first line. A
+  `CLAUDE.md` that already imports `@AGENTS.md`, or is a symlink to
+  it, is not superseded: leave it, it is the portable form (Bedrock,
+  Vertex, and Foundry sessions cannot read `AGENTS.md` directly).
+
+### A SessionStart hook that prints AGENTS.md into context
+- Compensated for: the same gap, solved with a hook.
+- Superseded by: the same native support. The hook now adds a second
+  copy of the file to every session.
+- Observed: 2026-09-19, Claude Code 2.1.278, Fable 5.1.
+- Verify: the hooks block in your settings files; whether the session
+  shows the AGENTS.md loaded line on its own.
+- Do: delete the hook, unless your sessions run where `AGENTS.md`
+  cannot load, in which case replace it with the import.
+
+### "AGENTS.md is the new standard: rename every CLAUDE.md"
+- Compensated for: nothing; it is a misreading of the 2.1.277 release.
+- Superseded by: the release notes themselves. `AGENTS.md` is a
+  fallback read when no `CLAUDE.md` exists. `CLAUDE.md` is not
+  deprecated, `/init` still writes it, and an `AGENTS.md` read through
+  the setting is not listed in `/memory` and does not fire
+  `InstructionsLoaded` hooks.
+- Observed: 2026-09-19, Claude Code 2.1.278.
+- Verify: the 2.1.277 changelog entry and the memory docs.
+- Do: do not rename. Keep `CLAUDE.md` where it exists; in repos that
+  standardise on `AGENTS.md`, make sure no stray `CLAUDE.md` or
+  `CLAUDE.local.md` is shadowing it.

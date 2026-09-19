@@ -29,7 +29,9 @@ engineer can see their own sessions the way that lead would.
   before you type (model, effort, permission mode, hooks, every
   CLAUDE.md in scope, plugins, MCP servers, memory), read-only and with
   secrets masked, and reports what forces stops, what taxes every
-  turn, and what is missing. Run it before coaching anyone whose
+  turn, and what is missing. The inventory states whether an
+  `AGENTS.md` is actually being read or is shadowed by a `CLAUDE.md`
+  that does not import it. Run it before coaching anyone whose
   sessions look slow; an inherited setup produces the same profile as
   bad habits.
 - **`/collab-dna:prune`** — finds the standing rules in every CLAUDE.md,
@@ -60,7 +62,8 @@ legacy. Trust nothing by default, the agent's estimates and training
 included, but accept good answers in two words. Ask where requirements
 came from and whether numbers are real. Reopen methods while they are
 working. Decide small things in one turn with a reason and track what
-you defer. Spend effort on product and verify against the running
+you defer; treat past decisions as evidence, not commitments, and
+supersede the record when you reopen one. Spend effort on product and verify against the running
 system; strip ceremony and schedule scaffolding for removal. Run the
 agent on a long leash, pull for gates not progress, force a read-back
 after a big miss, and be the fast hands for what only you can do. When
@@ -89,7 +92,7 @@ collab-dna/
     │   └── handover-case.md       the case the principles came from
     └── scripts/
         ├── extract_session.py     JSONL transcript → readable markdown + stats
-        ├── inspect_setup.py       read-only setup inventory, secrets masked
+        ├── inspect_setup.py       read-only setup inventory, secrets masked; AGENTS.md loaded-or-shadowed check
         └── find_stale.py          missing paths, old rule lines, state claims, memory drift, last-pass stamp
 ```
 

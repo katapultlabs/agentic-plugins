@@ -34,7 +34,7 @@ From the project root (where `.xcodeproj` or `.xcworkspace` is):
 bash <skill-path>/../scripts/install.sh
 ```
 
-Auto-detects app name, scheme, and platform, then copies scripts, generates Makefile, merges .gitignore, and creates CLAUDE.md. Verify with `make diagnose && make build`.
+Auto-detects app name, scheme, and platform, then copies scripts, generates Makefile, merges .gitignore, and creates or appends CLAUDE.md (or appends to `AGENTS.md` when the project uses that and has no CLAUDE.md). Verify with `make diagnose && make build`.
 
 ### Override auto-detection
 
