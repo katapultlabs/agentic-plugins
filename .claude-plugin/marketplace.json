@@ -58,6 +58,12 @@
       "source": "./collab-dna",
       "description": "How we build with agents, captured as sixteen auditable moves from real sessions. Audit any past Claude Code session, a whole project, the current conversation, or the setup that shapes them, and prune the rules a newer harness has superseded.",
       "version": "0.3.0"
+    },
+    {
+      "name": "contracts",
+      "source": "./contracts",
+      "description": "Points agents to Katapult's shared contract process doc in Google Drive before any MSA, SOW, DPA or NDA work, so everyone follows one baseline.",
+      "version": "0.1.0"
     }
   ]
 }
