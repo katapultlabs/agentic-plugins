@@ -1,0 +1,9 @@
+{
+  "name": "contracts",
+  "version": "0.1.0",
+  "description": "Points agents to Katapult's shared contract process doc in Google Drive before any MSA, SOW, DPA or NDA work, so everyone follows one baseline.",
+  "author": {
+    "name": "Tomás Gutierrez"
+  },
+  "keywords": ["contracts", "msa", "sow", "dpa", "nda", "legal", "process"]
+}
